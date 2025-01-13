@@ -3,11 +3,9 @@ import 'package:gap/gap.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:habitue_se/models/tarefa.dart';
+import 'package:habitue_se/pages/bottom_app_bar/bottom_app_bar_controller.dart';
 import 'package:habitue_se/pages/home_page/controller/home_controller.dart';
-import 'package:habitue_se/pages/home_page/widgets/calendario_de_registos.dart';
 import 'package:habitue_se/pages/home_page/widgets/lista_de_habitos.dart';
-import 'package:habitue_se/repository/concrete_habitos_repository.dart';
-import 'package:habitue_se/shared/bottom_app_bar_widget.dart';
 import 'package:habitue_se/shared/status_enum.dart';
 import 'package:habitue_se/shared/temas.dart';
 import 'package:habitue_se/shared/widgets/timeline_calendar.dart';
@@ -20,29 +18,47 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   HomeController controller = GetIt.instance<HomeController>();
+  BottomAppBarController bottomAppBarController =
+      GetIt.instance<BottomAppBarController>();
 
-  final List<Color> corAleatoria = [
-    Temas.redSecondary,
-    Temas.greenSecondary,
-    Temas.blueSecondary,
-    Temas.lilasSecondary,
-    Temas.purpleSecondary,
-    Temas.yellowSecondary,
-  ];
+  double titleSize = 17;
 
   @override
   void initState() {
+    bottomAppBarController.currentIndex = 0;
     super.initState();
-    controller.getAllHabitos();
-    controller.getAllTarefas();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Temas.backgroundColor,
+      appBar: AppBar(
+        backgroundColor: Temas.backgroundColor,
+        forceMaterialTransparency: true,
+        elevation: 0,
+        title: const Column(
+          children: [
+            Text('Hoje',
+                style: TextStyle(
+                    color: Temas.blackColor, fontWeight: FontWeight.w600)),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize:
+              Size.fromHeight(MediaQuery.sizeOf(context).height * 0.1),
+          child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20)),
+              ),
+              child: TimelineCalendar()),
+        ),
+      ),
       body: RefreshIndicator(
-        onRefresh: () => Future.delayed(const Duration(seconds: 1)),
+        onRefresh: controller.init,
         child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: Column(
@@ -50,7 +66,6 @@ class _HomePageState extends State<HomePage> {
                 ListenableBuilder(
                     listenable: controller,
                     builder: (context, _) {
-                      debugPrint('${controller.habitos}');
                       switch (controller.statusHabitosLoading) {
                         case StatusEnum.ERROR:
                           return Center(
@@ -77,14 +92,15 @@ class _HomePageState extends State<HomePage> {
                       }
                     }),
                 const Gap(10),
-                const Align(
+                Align(
                   alignment: Alignment.centerLeft,
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
                     child: Text(
                       'Tarefas',
                       style: TextStyle(
-                          fontSize: 20,
+                          fontSize: titleSize,
                           fontWeight: FontWeight.bold,
                           color: Temas.blackColor),
                     ),
@@ -125,14 +141,14 @@ class _HomePageState extends State<HomePage> {
             child: Container(
               margin: const EdgeInsets.only(bottom: 10),
               decoration: BoxDecoration(
-                color: corAleatoria[controller.tarefas.indexOf(tarefas) % 6],
+                color: Temas.secondary,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: ListTile(
                 title: Text(
                   tarefas.titulo,
                   style: GoogleFonts.roboto(
-                      fontSize: 20,
+                      fontSize: 15,
                       fontWeight: FontWeight.bold,
                       color: Temas.blackColor),
                 ),
@@ -141,7 +157,7 @@ class _HomePageState extends State<HomePage> {
                   onChanged: (value) {
                     controller.completarTarefa(tarefas);
                   },
-                  activeColor: Temas.bluePrimary,
+                  activeColor: Colors.green,
                 ),
               ),
             ),
@@ -151,51 +167,31 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildTela() {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        const Gap(60),
-        const Align(
+        Align(
           alignment: Alignment.centerLeft,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Text(
-              'Olá, Gabriel',
-              style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                  color: Temas.blackColor),
-            ),
-          ),
-        ),
-        Container(
-            padding: const EdgeInsets.all(10),
-            decoration: const BoxDecoration(
-              //color: Colors.grey[200],
-              borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20)),
-            ),
-            child: TimelineCalendar()),
-        const Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   'Chek-in Diário',
                   style: TextStyle(
-                      fontSize: 20,
+                      fontSize: titleSize,
                       fontWeight: FontWeight.bold,
                       color: Temas.blackColor),
                 ),
-                Gap(5),
-                Chip(padding: EdgeInsets.all(1), label: Text('Hoje'))
+                const Gap(5),
+                const Chip(padding: EdgeInsets.all(1), label: Text('Hoje'))
               ],
             ),
           ),
         ),
-        ListaDeHabitos(),
+        // if (controller.getHabitosByData(DateTime.now()).isEmpty)
+        if (controller.getHabitosByData(DateTime.now()).isNotEmpty)
+          ListaDeHabitos(),
       ],
     );
   }

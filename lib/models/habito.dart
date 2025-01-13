@@ -1,29 +1,30 @@
-import 'package:habitue_se/models/registrados_do_dia.dart';
+import 'registrados_do_dia.dart';
 
 class Habito {
   int id;
   String unicodeEmoji;
   String nome;
+  String? descricao;
   String unidadeDeMedida;
   bool completado;
-  int objetivoDiario;
-  DateTime? dataInicio;
+  double objetivoDiario;
+  DateTime dataInicio;
   DateTime? dataFim;
-
-  List<RegistradosDoDia> registradosDoDia;
+  String? hexColor;
   int completadosTotal;
 
   Habito(
       {required this.id,
       required this.nome,
+      this.descricao,
       this.unicodeEmoji = '',
       this.completado = false,
       this.completadosTotal = 0,
       required this.unidadeDeMedida,
-      this.dataInicio,
+      required this.dataInicio,
       this.dataFim,
-      required this.objetivoDiario,
-      required this.registradosDoDia});
+      this.hexColor,
+      required this.objetivoDiario});
 
   static Habito fromMap(Map<String, dynamic> map) {
     return Habito(
@@ -31,14 +32,9 @@ class Habito {
       nome: map['nome'],
       unicodeEmoji: map['unicode_emoji'],
       unidadeDeMedida: map['unidade_de_medida'],
-      dataInicio: map['data_inicio'] != null
-          ? DateTime.parse(map['data_inicio'])
-          : null,
+      dataInicio: DateTime.parse(map['data_inicio']),
       dataFim: map['data_fim'] != null ? DateTime.parse(map['data_fim']) : null,
       objetivoDiario: map['objetivo_diario'],
-      registradosDoDia: (map['registrados_do_dia'] as List)
-          .map((e) => RegistradosDoDia.fromMap(e))
-          .toList(),
     );
   }
 

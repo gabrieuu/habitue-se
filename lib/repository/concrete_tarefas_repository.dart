@@ -28,7 +28,7 @@ class ConcreteTarefasRepository implements AbstractTarefasRepository {
 
 const List<Map<String, dynamic>> tarefaMock = [
   {
-    'titulo': 'Estudar',
+    'titulo': 'Estudr',
     'descricao': 'blba',
     'data': '2025-1-20',
     'completado': false,

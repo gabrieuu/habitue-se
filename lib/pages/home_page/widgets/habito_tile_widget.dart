@@ -4,9 +4,9 @@ import 'package:get_it/get_it.dart';
 import 'package:habitue_se/models/habito.dart';
 import 'package:habitue_se/models/registrados_do_dia.dart';
 import 'package:habitue_se/pages/home_page/controller/home_controller.dart';
-import 'package:habitue_se/pages/home_page/percent_color.dart';
 import 'package:habitue_se/pages/home_page/widgets/percente_indicator_widget.dart';
 import 'package:habitue_se/repository/concrete_habitos_repository.dart';
+import 'package:habitue_se/shared/color_extension.dart';
 import 'package:habitue_se/shared/temas.dart';
 
 class HabitoTileWidget extends StatelessWidget {
@@ -42,7 +42,7 @@ class HabitoTileWidget extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(3),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        //color: Colors.white,
                         borderRadius: BorderRadius.circular(50),
                       ),
                       child: Text(
@@ -69,34 +69,20 @@ class HabitoTileWidget extends StatelessWidget {
                     child: PercentIndicatorWidget(
                       radius: 60,
                       lineWidth: 15,
-                      percent: habito.registradosDoDia.firstWhere(
-                            (element) => controller.isSameDate(
-                                element.diaAtual, DateTime.now()),
-                            orElse: () {
-                              return RegistradosDoDia(
-                                  idHabito: 0,
-                                  diaAtual: DateTime.now(),
-                                  completadosHoje: 0);
-                            },
-                          ).completadosHoje /
+                      percent: controller
+                              .getRegistradosByHabitoId(habito.id)
+                              .completadosHoje /
                           habito.objetivoDiario,
-                      progressColor: Temas.purplePrimary,
+                      progressColor: habito.hexColor != null
+                          ? hexToColor(habito.hexColor!)
+                          : Temas.bluePrimary,
                       child: Container(
                         margin: const EdgeInsets.all(20),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              '${controller.formatarNumeroDouble(habito.registradosDoDia.firstWhere(
-                                (element) => controller.isSameDate(
-                                    element.diaAtual, DateTime.now()),
-                                orElse: () {
-                                  return RegistradosDoDia(
-                                      idHabito: 0,
-                                      diaAtual: DateTime.now(),
-                                      completadosHoje: 0);
-                                },
-                              ).completadosHoje)} / ${habito.objetivoDiario}',
+                              '${controller.getRegistradosByHabitoId(habito.id).completadosHoje.toPrecision} / ${habito.objetivoDiario.toPrecision}',
                               style: const TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.bold),
                             ),
@@ -114,19 +100,46 @@ class HabitoTileWidget extends StatelessWidget {
                   ),
                 ),
                 const Gap(10),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                      foregroundColor: Temas.backgroundColor,
-                      backgroundColor: Temas.bluePrimary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      )),
-                  child: const Text('Registrar'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          controller.removeRegistroHabitoDiario(habito);
+                        },
+                        style: ElevatedButton.styleFrom(
+                            foregroundColor: Temas.primary,
+                            backgroundColor: Temas.secondary.withOpacity(0.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            )),
+                        icon: const Icon(Icons.remove)),
+                    IconButton(
+                      onPressed: () {
+                        controller.addRegistroHabitoDiario(habito);
+                      },
+                      style: ElevatedButton.styleFrom(
+                          foregroundColor: Temas.primary,
+                          backgroundColor: Temas.secondary.withOpacity(0.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          )),
+                      icon: const Icon(Icons.add),
+                    ),
+                  ],
                 )
               ],
             ),
           );
         });
+  }
+}
+
+extension DoubleExtension on double {
+  String get toPrecision {
+    if (this % 1 == 0) {
+      return (this).toInt().toString();
+    }
+    return (this).toStringAsFixed(1);
   }
 }

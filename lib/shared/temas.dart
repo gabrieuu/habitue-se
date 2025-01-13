@@ -2,13 +2,14 @@ import 'dart:ui';
 
 class Temas {
   //primaries
-  static const Color yellowPrimary = Color(0xFFF3C244);
+  static const Color primary = Color(0xFFF3C244);
+  static const Color secondary = Color(0xFFF5F19E);
+
   static const Color purplePrimary = Color(0xFFC2B9D2);
   static const Color bluePrimary = Color(0xFF93AFDB);
   static const Color greyPrimary = Color(0xFF868E9B);
 
   //secondaries
-  static const Color yellowSecondary = Color(0xFFF5F19E);
   static const Color redSecondary = Color(0xFFF7BBBB);
   static const Color greenSecondary = Color(0xFFCAF4C6);
   static const Color blueSecondary = Color(0xFFC7E0F6);

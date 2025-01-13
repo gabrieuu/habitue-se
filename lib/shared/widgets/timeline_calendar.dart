@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:habitue_se/pages/home_page/controller/home_controller.dart';
 import 'package:habitue_se/pages/home_page/percent_color.dart';
+import 'package:habitue_se/shared/data_utils.dart';
 import 'dart:ui';
 
 import 'package:habitue_se/shared/temas.dart';
@@ -19,17 +20,18 @@ class TimelineCalendar extends StatelessWidget {
     return ListenableBuilder(
         listenable: controller,
         builder: (context, _) {
-          return EasyDateTimeLine(
-            itemBuilder: (context, date, isSelected, onTap) {
-              isSelected = controller.isSameDate(date, DateTime.now());
+          return EasyDateTimeLinePicker.itemBuilder(
+            firstDate: DateTime(DateTime.now().year, DateTime.now().month, 1),
+            lastDate:
+                DateTime(DateTime.now().year, DateTime.now().month + 1, 0),
+            focusedDate: DateTime.now(),
+            itemExtent: 60,
+            headerOptions: HeaderOptions(headerType: HeaderType.none),
+            onDateChange: (date) {},
+            itemBuilder: (context, date, isSelected, _, __, onTap) {
+              isSelected = date.isSameDate(DateTime.now());
               return _buildDayTile(date, isSelected, onTap);
             },
-            initialDate: DateTime.now().subtract(const Duration(days: 1)),
-            headerProps: const EasyHeaderProps(
-              showHeader: false,
-              monthPickerType: MonthPickerType.switcher,
-              dateFormatter: DateFormatter.dayOnly(),
-            ),
           );
         });
   }
@@ -77,14 +79,9 @@ class TimelineCalendar extends StatelessWidget {
           CustomPaint(
             size: const Size(50, 70),
             painter: _MyBorderPainter(
-                progress: controller
-                        .getTotalCompletado(controller.getHabitosDoDia(date)) /
-                    controller.getTotalObjetivo(date),
-                borderColor: percentColor(
-                  controller.getTotalCompletado(
-                          controller.getHabitosDoDia(date)) /
-                      controller.getTotalObjetivo(date),
-                )),
+                progress: controller.getPercentCompletado(date),
+                borderColor:
+                    percentColor(controller.getPercentCompletado(date))),
           ),
       ],
     );

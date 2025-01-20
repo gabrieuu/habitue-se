@@ -4,4 +4,8 @@ extension DateUtilsExtension on DateTime {
         (this).month == date.month &&
         (this).day == date.day;
   }
+
+  DateTime toFullYear() {
+    return DateTime((this).year, (this).month, (this).day);
+  }
 }

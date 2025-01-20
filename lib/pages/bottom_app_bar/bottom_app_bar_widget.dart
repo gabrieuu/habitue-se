@@ -115,9 +115,11 @@ class _BottomAppBarWidgetState extends State<BottomAppBarWidget> {
       listenable: controller,
       builder: (context, child) {
         return GestureDetector(
-          onTap: () {
-            controller.changePage(context, index);
-          },
+          onTap: (controller.currentIndex != index)
+              ? () {
+                  controller.changePage(context, index);
+                }
+              : null,
           child: FittedBox(
             child: Column(
               mainAxisSize: MainAxisSize.min,

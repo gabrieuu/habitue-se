@@ -1,5 +1,5 @@
 class RegistradosDoDia {
-  int idHabito;
+  String idHabito;
   DateTime diaAtual;
   double completadosHoje;
 
@@ -8,7 +8,15 @@ class RegistradosDoDia {
       required this.diaAtual,
       this.completadosHoje = 0});
 
-  static RegistradosDoDia fromMap(Map<String, dynamic> map) {
+  Map<String, dynamic> toMap() {
+    return {
+      'id_habito': idHabito,
+      'dia_atual': diaAtual.toIso8601String(),
+      'completados_hoje': completadosHoje,
+    };
+  }
+
+  static RegistradosDoDia fromMap(Map<dynamic, dynamic> map) {
     return RegistradosDoDia(
       idHabito: map['id_habito'],
       diaAtual: DateTime.parse(map['dia_atual']),

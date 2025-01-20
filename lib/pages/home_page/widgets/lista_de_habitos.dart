@@ -5,30 +5,32 @@ import 'package:habitue_se/pages/home_page/widgets/habito_tile_widget.dart';
 import 'package:habitue_se/repository/concrete_habitos_repository.dart';
 
 class ListaDeHabitos extends StatelessWidget {
-  ListaDeHabitos({super.key});
+  ListaDeHabitos({super.key, this.dataSelecionada});
   HomeController controller = GetIt.instance<HomeController>();
-
+  DateTime? dataSelecionada;
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, child) {
-        return SizedBox(
-          height: MediaQuery.of(context).size.height * 0.3,
-          child: ListView.builder(
-            padding: const EdgeInsets.only(left: 20),
-            scrollDirection: Axis.horizontal,
-            itemCount: controller.habitos.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                child: HabitoTileWidget(
-                  habito: controller.habitos[index],
-                ),
-              );
-            },
-          ),
+        var habitos =
+            controller.getHabitosByData(dataSelecionada ?? DateTime.now());
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Wrap(
+              direction: Axis.horizontal,
+              children: List.generate(habitos.length, (index) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                      left: (index == 0) ? 20 : 10,
+                      right: 10,
+                      top: 5,
+                      bottom: 5),
+                  child: HabitoTileWidget(
+                    habito: habitos[index],
+                  ),
+                );
+              })),
         );
       },
     );

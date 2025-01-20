@@ -7,14 +7,15 @@ import 'package:habitue_se/repository/abstract_habitos_repository.dart';
 import 'package:habitue_se/repository/abstract_tarefas_repository.dart';
 import 'package:habitue_se/shared/data_utils.dart';
 import 'package:habitue_se/shared/status_enum.dart';
+import 'package:uuid/uuid.dart';
 
 class HomeController extends ChangeNotifier {
   List<Habito> habitos = [];
   List<Tarefa> tarefas = [];
   Set<RegistradosDoDia> registradosDoDia = {};
 
-  StatusEnum statusTarefasLoading = StatusEnum.EMPTY;
-  StatusEnum statusHabitosLoading = StatusEnum.EMPTY;
+  StatusEnum statusTarefasLoading = StatusEnum.NONE;
+  StatusEnum statusHabitosLoading = StatusEnum.NONE;
 
   AbstractHabitosRepository habitosRepository;
   AbstractTarefasRepository tarefasRepository;
@@ -24,53 +25,75 @@ class HomeController extends ChangeNotifier {
   }
 
   Future<void> init() async {
-    getAllHabitos();
-    getAllTarefas();
-    getAllRegistradosDoDia();
+    await getAllHabitos();
+    await getAllRegistradosDoDia();
+    await getAllTarefas();
   }
 
-  addNewHabito(Habito newHabito) {
-    habitos.add(newHabito);
-    notifyListeners();
-  }
-
-  addRegistroHabitoDiario(Habito habito, {double? quantidade}) {
-    var data = getRegistradosByHabitoId(habito.id);
-
-    registradosDoDia.remove(data);
-
-    if (data.completadosHoje + (quantidade ?? 1) > habito.objetivoDiario) {
-      data.completadosHoje = habito.objetivoDiario;
+  addNewHabito(Habito newHabito) async {
+    if (habitos.contains(newHabito)) {
+      var index = habitos.indexWhere((element) => element.id == newHabito.id);
+      habitos[index] = newHabito;
     } else {
-      data.completadosHoje += (quantidade ?? 1);
+      habitos.add(newHabito);
     }
 
-    registradosDoDia.add(data);
     notifyListeners();
+    try {
+      await habitosRepository.add(newHabito);
+    } catch (e) {
+      habitos.remove(newHabito);
+      notifyListeners();
+    }
   }
 
-  removeRegistroHabitoDiario(Habito habito, {double? quantidade}) {
-    var data = getRegistradosByHabitoId(habito.id);
+  deleteHabito(Habito habito) {
+    var index = habitos.indexWhere((element) => element.id == habito.id);
+    habitos.remove(habito);
+    notifyListeners();
+    try {
+      habitosRepository.delete(habito.id);
+    } catch (e) {
+      habitos.insert(index, habito);
+      notifyListeners();
+    }
+  }
 
-    registradosDoDia.remove(data);
+  Future<void> ajustarRegistroHabitoDiario(Habito habito,
+      {required double quantidade}) async {
+    var data = getRegistradosByHabitoId(
+      habito.id,
+    );
 
-    if (data.completadosHoje - (quantidade ?? 1) < 0) {
-      data.completadosHoje = 0;
-    } else {
-      data.completadosHoje -= (quantidade ?? 1);
+    var comopletados = data.completadosHoje + quantidade;
+    if (comopletados > habito.objetivoDiario) {
+      return;
+    } else if (comopletados < 0) {
+      return;
     }
 
+    registradosDoDia.remove(data);
+    data.completadosHoje += quantidade;
     registradosDoDia.add(data);
     notifyListeners();
+
+    try {
+      await habitosRepository.addRegistradosDoDia(data);
+    } catch (e) {
+      registradosDoDia.remove(data);
+      data.completadosHoje -= quantidade;
+      registradosDoDia.add(data);
+      notifyListeners();
+    }
   }
 
   Future<void> getAllHabitos() async {
     try {
       statusHabitosLoading = StatusEnum.LOADING;
-      await Future.delayed(const Duration(seconds: 3));
       notifyListeners();
       habitos = await habitosRepository.get();
       statusHabitosLoading = StatusEnum.SUCESS;
+      notifyListeners();
     } catch (e) {
       statusHabitosLoading = StatusEnum.ERROR;
     } finally {
@@ -79,11 +102,23 @@ class HomeController extends ChangeNotifier {
   }
 
   List<Habito> getHabitosByData(DateTime date) {
-    return habitos
+    if (habitos.isEmpty) {
+      return [];
+    }
+    var list = habitos
         .where((element) =>
-            date.isAfter(element.dataInicio) &&
-            (element.dataFim == null || date.isBefore(element.dataFim!)))
+            isDateWithinRange(date, element.dataInicio, element.dataFim))
         .toList();
+    return list;
+  }
+
+  bool isDateWithinRange(DateTime date, DateTime startDate, DateTime? endDate) {
+    if (endDate == null) {
+      return date.isAfter(startDate) || date.isAtSameMomentAs(startDate);
+    }
+
+    return (date.isAfter(startDate) || date.isAtSameMomentAs(startDate)) &&
+        (date.isBefore(endDate) || date.isAtSameMomentAs(endDate));
   }
 
   Future<void> getAllTarefas() async {
@@ -102,7 +137,6 @@ class HomeController extends ChangeNotifier {
 
   Future<void> getAllRegistradosDoDia() async {
     try {
-      await Future.delayed(const Duration(seconds: 3));
       List<RegistradosDoDia> registradosDoDia =
           await habitosRepository.getRegistradosDoDia();
       this.registradosDoDia = registradosDoDia.toSet();
@@ -131,7 +165,7 @@ class HomeController extends ChangeNotifier {
         .toList();
   }
 
-  RegistradosDoDia getRegistradosByHabitoId(int idHabito, {DateTime? day}) {
+  RegistradosDoDia getRegistradosByHabitoId(String idHabito, {DateTime? day}) {
     var data = getRegistradosDoDiaSelecionado(day ?? DateTime.now())
         .firstWhere((e) => e.idHabito == idHabito, orElse: () {
       return RegistradosDoDia(
@@ -147,6 +181,11 @@ class HomeController extends ChangeNotifier {
     double totalCompletado = getTotalCompletado(day);
     double totalObjetivo = getTotalObjetivo(day);
     double percent = totalCompletado / totalObjetivo;
+
+    if(totalObjetivo == 0){
+      return 0.0;
+    }
+
     return percent;
   }
 
@@ -166,8 +205,11 @@ class HomeController extends ChangeNotifier {
   double getTotalObjetivo(DateTime date) {
     double totalObjetivo = 0;
     for (var item in habitos) {
-      if (date.isAfter(item.dataInicio) || date.isSameDate(item.dataInicio)) {
-        if (item.dataFim != null && date.isAfter(item.dataFim!)) {
+      if (date.toFullYear().isAfter(item.dataInicio.toFullYear()) ||
+          date.toFullYear().isSameDate(item.dataInicio.toFullYear())) {
+        if (item.dataFim != null &&
+            (date.toFullYear().isAfter(item.dataFim!.toFullYear()) ||
+                date.toFullYear().isSameDate(item.dataFim!.toFullYear()))) {
           continue;
         }
         totalObjetivo += item.objetivoDiario;

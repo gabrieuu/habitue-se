@@ -25,8 +25,9 @@ class TimelineCalendar extends StatelessWidget {
             lastDate:
                 DateTime(DateTime.now().year, DateTime.now().month + 1, 0),
             focusedDate: DateTime.now(),
+            selectionMode: const SelectionMode.autoCenter(),
             itemExtent: 60,
-            headerOptions: HeaderOptions(headerType: HeaderType.none),
+            headerOptions: const HeaderOptions(headerType: HeaderType.none),
             onDateChange: (date) {},
             itemBuilder: (context, date, isSelected, _, __, onTap) {
               isSelected = date.isSameDate(DateTime.now());
@@ -45,9 +46,9 @@ class TimelineCalendar extends StatelessWidget {
           height: 70,
           margin: const EdgeInsets.all(2),
           decoration: BoxDecoration(
-            color: isSelected ? Temas.blackColor : Colors.transparent,
+            color: isSelected ? Temas.primary : Colors.transparent,
             border: Border.all(
-              color: Temas.blackColor,
+              color: Temas.primary.withOpacity(.2),
               width: 0.5,
             ),
             borderRadius: BorderRadius.circular(8),
@@ -75,7 +76,7 @@ class TimelineCalendar extends StatelessWidget {
             ),
           ),
         ),
-        if (date.isBefore(DateTime.now()))
+        if (date.isBefore(DateTime.now().subtract(const Duration(days: 1))))
           CustomPaint(
             size: const Size(50, 70),
             painter: _MyBorderPainter(

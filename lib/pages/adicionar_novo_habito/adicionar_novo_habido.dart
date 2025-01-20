@@ -4,13 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habitue_se/models/habito.dart';
 import 'package:habitue_se/pages/adicionar_novo_habito/novo_habito_view_controller.dart';
 import 'package:habitue_se/shared/status_enum.dart';
 import 'package:habitue_se/shared/temas.dart';
 import 'package:habitue_se/shared/widgets/emoji_picker.dart';
 
 class AdicionarNovoHabido extends StatefulWidget {
-  AdicionarNovoHabido({super.key});
+  AdicionarNovoHabido({super.key, this.habitoParaEditar});
+
+  Habito? habitoParaEditar;
 
   @override
   State<AdicionarNovoHabido> createState() => _AdicionarNovoHabidoState();
@@ -22,7 +25,12 @@ class _AdicionarNovoHabidoState extends State<AdicionarNovoHabido> {
   @override
   void initState() {
     super.initState();
-    controller = NovoHabitoViewController();
+    if (widget.habitoParaEditar != null) {
+      controller =
+          NovoHabitoViewController(habitoParaEditar: widget.habitoParaEditar);
+    } else {
+      controller = NovoHabitoViewController();
+    }
   }
 
   final double radiusBoxes = 10;

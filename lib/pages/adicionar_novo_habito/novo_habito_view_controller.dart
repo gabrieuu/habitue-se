@@ -3,9 +3,11 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get_it/get_it.dart';
 import 'package:habitue_se/models/habito.dart';
 import 'package:habitue_se/pages/home_page/controller/home_controller.dart';
+import 'package:habitue_se/shared/color_extension.dart';
 import 'package:habitue_se/shared/data_utils.dart';
 import 'package:habitue_se/shared/status_enum.dart';
 import 'package:habitue_se/shared/temas.dart';
+import 'package:uuid/uuid.dart';
 
 class NovoHabitoViewController extends ChangeNotifier {
   TextEditingController objetivo = TextEditingController();
@@ -20,7 +22,26 @@ class NovoHabitoViewController extends ChangeNotifier {
   bool dataFimHabilitada = false;
   StatusEnum statusNovoHabitoAdicionado = StatusEnum.EMPTY;
 
+  Habito? habitoParaEditar;
+
   HomeController homeController = GetIt.instance<HomeController>();
+
+  NovoHabitoViewController({this.habitoParaEditar}) {
+    if (habitoParaEditar != null) {
+      objetivo.text = habitoParaEditar!.objetivoDiario.toString();
+      unidade.text = habitoParaEditar!.unidadeDeMedida;
+      descricao.text = habitoParaEditar!.descricao ?? '';
+      habitoText.text = habitoParaEditar!.nome;
+      icone.text = habitoParaEditar!.unicodeEmoji;
+      cor = habitoParaEditar!.hexColor != null
+          ? hexToColor(habitoParaEditar!.hexColor!)
+          : cor;
+      dataInicio = habitoParaEditar!.dataInicio;
+      dataFim = habitoParaEditar!.dataFim;
+      dataFimHabilitada = habitoParaEditar!.dataFim != null;
+      notifyListeners();
+    }
+  }
 
   Future<void> createNewHabit() async {
     if (double.tryParse(objetivo.text) == null) {
@@ -34,7 +55,7 @@ class NovoHabitoViewController extends ChangeNotifier {
     notifyListeners();
 
     Habito habito = Habito(
-      id: homeController.habitos.length + 1,
+      id: habitoParaEditar != null ? habitoParaEditar!.id : const Uuid().v1(),
       objetivoDiario: double.tryParse(objetivo.text)!,
       unidadeDeMedida: unidade.text,
       nome: habitoText.text,

@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habitue_se/models/habito.dart';
 import 'package:habitue_se/pages/adicionar_novo_habito/adicionar_novo_habido.dart';
 import 'package:habitue_se/pages/calendario/calendario_page.dart';
 import 'package:habitue_se/pages/habitos/habitos_page.dart';
@@ -47,8 +50,13 @@ var route = GoRouter(
             ),
           ]),
       GoRoute(
-        parentNavigatorKey: _rootNavigatorKey,
-        path: '/novo-habito',
-        builder: (context, state) => AdicionarNovoHabido(),
-      )
+          parentNavigatorKey: _rootNavigatorKey,
+          path: '/novo-habito',
+          builder: (context, state) {
+            final habitoParaEditar = state.extra;
+            if (habitoParaEditar is! Habito) {
+              return AdicionarNovoHabido();
+            }
+            return AdicionarNovoHabido(habitoParaEditar: habitoParaEditar);
+          })
     ]);

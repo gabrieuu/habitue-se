@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:habitue_se/pages/home_page/pages/home_page.dart';
+import 'package:habitue_se/database/data_service.dart';
 import 'package:habitue_se/setup_modules.dart';
-import 'package:habitue_se/pages/bottom_app_bar/bottom_app_bar_widget.dart';
 import 'package:habitue_se/setup_routes.dart';
 import 'package:habitue_se/shared/temas.dart';
-import 'package:intl/date_symbol_data_local.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  await DataService.instance.init();
   setupModules();
-  initializeDateFormatting().then((_) {
-    return runApp(const MyApp());
-  });
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {

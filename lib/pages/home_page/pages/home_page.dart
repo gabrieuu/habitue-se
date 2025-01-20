@@ -6,9 +6,11 @@ import 'package:habitue_se/models/tarefa.dart';
 import 'package:habitue_se/pages/bottom_app_bar/bottom_app_bar_controller.dart';
 import 'package:habitue_se/pages/home_page/controller/home_controller.dart';
 import 'package:habitue_se/pages/home_page/widgets/lista_de_habitos.dart';
+import 'package:habitue_se/pages/home_page/widgets/progresso_hoje_widget.dart';
 import 'package:habitue_se/shared/status_enum.dart';
 import 'package:habitue_se/shared/temas.dart';
 import 'package:habitue_se/shared/widgets/timeline_calendar.dart';
+import 'package:lottie/lottie.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -58,7 +60,7 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       body: RefreshIndicator(
-        onRefresh: controller.init,
+        onRefresh: () async => await controller.init(),
         child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: Column(
@@ -83,6 +85,7 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                           );
+
                         case StatusEnum.SUCESS:
                           return _buildTela();
                         default:
@@ -92,38 +95,38 @@ class _HomePageState extends State<HomePage> {
                       }
                     }),
                 const Gap(10),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
-                    child: Text(
-                      'Tarefas',
-                      style: TextStyle(
-                          fontSize: titleSize,
-                          fontWeight: FontWeight.bold,
-                          color: Temas.blackColor),
-                    ),
-                  ),
-                ),
-                ListenableBuilder(
-                    listenable: controller,
-                    builder: (context, _) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(0),
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: controller.tarefas.length,
-                          itemBuilder: (context, index) {
-                            return _buildListaDeTarefas(
-                                controller.tarefas[index]);
-                          },
-                        ),
-                      );
-                    }),
-                const Gap(20)
+                // Align(
+                //   alignment: Alignment.centerLeft,
+                //   child: Padding(
+                //     padding: const EdgeInsets.symmetric(
+                //         horizontal: 20, vertical: 10),
+                //     child: Text(
+                //       'Tarefas',
+                //       style: TextStyle(
+                //           fontSize: titleSize,
+                //           fontWeight: FontWeight.bold,
+                //           color: Temas.blackColor),
+                //     ),
+                //   ),
+                // ),
+                // ListenableBuilder(
+                //     listenable: controller,
+                //     builder: (context, _) {
+                //       return Padding(
+                //         padding: const EdgeInsets.symmetric(horizontal: 16),
+                //         child: ListView.builder(
+                //           padding: const EdgeInsets.all(0),
+                //           shrinkWrap: true,
+                //           physics: const NeverScrollableScrollPhysics(),
+                //           itemCount: controller.tarefas.length,
+                //           itemBuilder: (context, index) {
+                //             return _buildListaDeTarefas(
+                //                 controller.tarefas[index]);
+                //           },
+                //         ),
+                //       );
+                //     }),
+                // const Gap(20)
               ],
             )),
       ),
@@ -169,6 +172,8 @@ class _HomePageState extends State<HomePage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (controller.getHabitosByData(DateTime.now()).isNotEmpty)
+          ProgressoHojeWidget(),
         Align(
           alignment: Alignment.centerLeft,
           child: Padding(
@@ -189,9 +194,33 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        // if (controller.getHabitosByData(DateTime.now()).isEmpty)
+        if (controller.getHabitosByData(DateTime.now()).isEmpty)
+          const LottieEmptyList(),
         if (controller.getHabitosByData(DateTime.now()).isNotEmpty)
           ListaDeHabitos(),
+      ],
+    );
+  }
+}
+
+class LottieEmptyList extends StatelessWidget {
+  const LottieEmptyList({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Lottie.asset(
+          'assets/empty_list.json',
+          height: 250,
+          width: 250,
+        ),
+        const Text(
+          'Nenhum hábito para hoje, Adicione o Primeiro!',
+          style:
+              TextStyle(color: Temas.bluePrimary, fontWeight: FontWeight.w600),
+          maxLines: 2,
+        ),
       ],
     );
   }

@@ -10,7 +10,7 @@ Color percentColor(double percent) {
     return Colors.orange;
   }
   if (percent < 0.7) {
-    return Colors.yellow;
+    return const Color.fromARGB(255, 255, 230, 0);
   }
   if (percent < 1.0) {
     return Colors.blue;

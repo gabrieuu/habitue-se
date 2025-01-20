@@ -19,7 +19,7 @@ class CalendarioDeRegistros extends StatefulWidget {
 
 class _CalendarioDeRegistrosState extends State<CalendarioDeRegistros> {
   HomeController controller = GetIt.instance<HomeController>();
-  bool isExpanded = false;
+  bool isExpanded = true;
   CalendarFormat calendarFormat = CalendarFormat.week;
 
   @override
@@ -33,74 +33,73 @@ class _CalendarioDeRegistrosState extends State<CalendarioDeRegistros> {
           ListenableBuilder(
               listenable: controller,
               builder: (context, _) {
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Temas.boxColor,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 0.3,
-                        blurRadius: 4,
-                        offset: const Offset(1, 2),
-                      ),
-                    ],
-                  ),
-                  child: TableCalendar(
-                      locale: 'pt_BR',
-                      calendarFormat: isExpanded
-                          ? CalendarFormat.month
-                          : CalendarFormat.week,
-                      headerVisible: isExpanded ? true : false,
-                      headerStyle: const HeaderStyle(
-                        formatButtonVisible: false,
-                      ),
-                      onDaySelected: widget.onDaySelected,
-                      availableGestures: AvailableGestures.all,
-                      onFormatChanged: (format) {
-                        setState(() {
-                          calendarFormat = format;
-                        });
+                return TableCalendar(
+                    locale: 'pt_BR',
+                    calendarFormat:
+                        isExpanded ? CalendarFormat.month : CalendarFormat.week,
+                    headerVisible: isExpanded ? true : false,
+                    headerStyle: const HeaderStyle(
+                      formatButtonVisible: false,
+                    ),
+                    onDaySelected: widget.onDaySelected,
+                    availableGestures: AvailableGestures.all,
+                    onFormatChanged: (format) {
+                      setState(() {
+                        calendarFormat = format;
+                      });
+                    },
+                    currentDay: DateTime.now(),
+                    calendarBuilders: CalendarBuilders(
+                      defaultBuilder: (context, day, focusedDay) {
+                        List habitosByData = controller.getHabitosByData(day);
+                        double percent = controller.getPercentCompletado(day);
+                        return (habitosByData.isNotEmpty &&
+                                day.isBefore(DateTime.now()))
+                            ? PercentIndicatorWidget(
+                                percent: percent,
+                                progressColor: percentColor(percent),
+                                child: Text('${day.day}'))
+                            : Container(
+                                height: 40,
+                                alignment: Alignment.center,
+                                child: Center(child: Text('${day.day}')));
                       },
-                      currentDay: DateTime.now(),
-                      calendarBuilders: CalendarBuilders(
-                        defaultBuilder: (context, day, focusedDay) {
-                          return (controller.getHabitosDoDia(day).isNotEmpty &&
-                                  day.isBefore(DateTime.now()))
-                              ? PercentIndicatorWidget(
-                                  percent: controller.getTotalCompletado(
-                                      controller.getHabitosDoDia(day)),
-                                  progressColor: percentColor(
-                                      controller.getTotalCompletado(
-                                          controller.getHabitosDoDia(day))),
-                                  child: Text('${day.day}'))
-                              : Container(
-                                  height: 40,
-                                  alignment: Alignment.center,
-                                  child: Center(child: Text('${day.day}')));
-                        },
-                        todayBuilder: (context, day, focusedDay) {
-                          return Container(
-                              height: 40,
-                              width: 40,
-                              decoration: BoxDecoration(
-                                  color: Temas.bluePrimary,
-                                  borderRadius: BorderRadius.circular(50)),
-                              alignment: Alignment.center,
-                              child: Center(
-                                  child: Text(
-                                '${day.day}',
-                                style: const TextStyle(
-                                    color: Temas.backgroundColor),
-                              )));
-                        },
-                      ),
-                      focusedDay: DateTime.now(),
-                      firstDay:
-                          DateTime.now().subtract(const Duration(days: 365)),
-                      lastDay: DateTime.now().add(const Duration(days: 365))),
-                );
+                      todayBuilder: (context, day, focusedDay) {
+                        List habitosByData = controller.getHabitosByData(day);
+                        double percent = controller.getPercentCompletado(day);
+                        return (habitosByData.isNotEmpty &&
+                                day.isBefore(DateTime.now()))
+                            ? PercentIndicatorWidget(
+                                percent: percent,
+                                progressColor: percentColor(percent),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Container(
+                                      height: 40,
+                                      width: 40,
+                                      decoration: BoxDecoration(
+                                          color: Temas.secondary,
+                                          borderRadius:
+                                              BorderRadius.circular(50)),
+                                      alignment: Alignment.center,
+                                      child: Center(
+                                          child: Text(
+                                        '${day.day}',
+                                        style: const TextStyle(
+                                            color: Temas.backgroundColor),
+                                      ))),
+                                ),
+                              )
+                            : Container(
+                                height: 40,
+                                alignment: Alignment.center,
+                                child: Center(child: Text('${day.day}')));
+                      },
+                    ),
+                    focusedDay: DateTime.now(),
+                    firstDay:
+                        DateTime.now().subtract(const Duration(days: 365)),
+                    lastDay: DateTime.now().add(const Duration(days: 365)));
               }),
           const SizedBox(
             height: 10,

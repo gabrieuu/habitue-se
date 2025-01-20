@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:habitue_se/models/habito.dart';
 import 'package:habitue_se/models/registrados_do_dia.dart';
 import 'package:habitue_se/pages/home_page/controller/home_controller.dart';
@@ -20,16 +21,15 @@ class HabitoTileWidget extends StatelessWidget {
         builder: (context, _) {
           return Container(
             padding: const EdgeInsets.all(10),
-            height: MediaQuery.of(context).size.height * 0.25,
             width: MediaQuery.of(context).size.width * 0.4,
             decoration: BoxDecoration(
               color: Temas.boxColor,
               boxShadow: [
                 BoxShadow(
                   color: Colors.grey.withOpacity(0.5),
-                  spreadRadius: 1,
-                  blurRadius: 7,
-                  offset: const Offset(2, 2),
+                  spreadRadius: .1,
+                  blurRadius: 2,
+                  offset: const Offset(1, 1),
                 ),
               ],
               borderRadius: BorderRadius.circular(10),
@@ -39,26 +39,35 @@ class HabitoTileWidget extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(3),
-                      decoration: BoxDecoration(
-                        //color: Colors.white,
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      child: Text(
-                        habito.unicodeEmoji,
-                        style: const TextStyle(fontSize: 15),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              //color: Colors.white,
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            child: Text(
+                              habito.unicodeEmoji,
+                              style: const TextStyle(fontSize: 15),
+                            ),
+                          ),
+                          const Gap(5),
+                          Flexible(
+                            child: Text(
+                              habito.nome,
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w500),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const Gap(5),
-                    Flexible(
-                      child: Text(
-                        habito.nome,
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                    PopUpMenuWidget(
+                      habito: habito,
                     ),
                   ],
                 ),
@@ -86,13 +95,15 @@ class HabitoTileWidget extends StatelessWidget {
                               style: const TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.bold),
                             ),
-                            FittedBox(
-                              child: Text(
-                                habito.unidadeDeMedida,
-                                style: const TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.w500),
-                              ),
-                            )
+                            if (habito.unidadeDeMedida.isNotEmpty)
+                              FittedBox(
+                                child: Text(
+                                  habito.unidadeDeMedida,
+                                  style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              )
                           ],
                         ),
                       ),
@@ -105,7 +116,8 @@ class HabitoTileWidget extends StatelessWidget {
                   children: [
                     IconButton(
                         onPressed: () {
-                          controller.removeRegistroHabitoDiario(habito);
+                          controller.ajustarRegistroHabitoDiario(habito,
+                              quantidade: -1);
                         },
                         style: ElevatedButton.styleFrom(
                             foregroundColor: Temas.primary,
@@ -116,7 +128,8 @@ class HabitoTileWidget extends StatelessWidget {
                         icon: const Icon(Icons.remove)),
                     IconButton(
                       onPressed: () {
-                        controller.addRegistroHabitoDiario(habito);
+                        controller.ajustarRegistroHabitoDiario(habito,
+                            quantidade: 1);
                       },
                       style: ElevatedButton.styleFrom(
                           foregroundColor: Temas.primary,
@@ -132,6 +145,65 @@ class HabitoTileWidget extends StatelessWidget {
             ),
           );
         });
+  }
+}
+
+class PopUpMenuWidget extends StatelessWidget {
+  PopUpMenuWidget({super.key, required this.habito});
+  HomeController controller = GetIt.instance<HomeController>();
+  Habito habito;
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton(
+      color: Temas.boxColor,
+      icon: const Icon(Icons.more_vert),
+      itemBuilder: (context) {
+        return [
+          PopupMenuItem(
+            onTap: () {
+              context.push('/novo-habito', extra: habito);
+            },
+            child: const Text('Editar'),
+          ),
+          PopupMenuItem(
+            onTap: () {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      backgroundColor: Temas.backgroundColor,
+                      title: const Text('Excluir'),
+                      content: const Text('Deseja excluir este hábito?'),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              habito.dataFim = DateTime.now()
+                                  .subtract(const Duration(days: 1));
+                              controller.addNewHabito(habito);
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Sim')),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Não')),
+                      ],
+                    );
+                  });
+            },
+            child: const Text('Excluir'),
+          ),
+        ];
+      },
+      onSelected: (value) {
+        if (value == 'editar') {
+          print('editar');
+        } else {
+          print('excluir');
+        }
+      },
+    );
   }
 }
 

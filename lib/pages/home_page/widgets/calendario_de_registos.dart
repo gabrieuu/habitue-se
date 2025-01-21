@@ -65,10 +65,12 @@ class _CalendarioDeRegistrosState extends State<CalendarioDeRegistros> {
                                 child: Center(child: Text('${day.day}')));
                       },
                       todayBuilder: (context, day, focusedDay) {
-                        List habitosByData = controller.getHabitosByData(day);
-                        double percent = controller.getPercentCompletado(day);
+                        List habitosByData =
+                            controller.getHabitosByData(focusedDay);
+                        double percent =
+                            controller.getPercentCompletado(focusedDay);
                         return (habitosByData.isNotEmpty &&
-                                day.isBefore(DateTime.now()))
+                                focusedDay.isBefore(DateTime.now()))
                             ? PercentIndicatorWidget(
                                 percent: percent,
                                 progressColor: percentColor(percent),

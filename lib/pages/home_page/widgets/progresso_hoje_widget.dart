@@ -16,7 +16,8 @@ class ProgressoHojeWidget extends StatelessWidget {
     return ListenableBuilder(
         listenable: controller,
         builder: (context, child) {
-          var percent = controller.getPercentCompletado(DateTime.now());
+          var percent =
+              controller.getPercentCompletado(controller.dataSelecionada);
           return Container(
             height: 60,
             width: MediaQuery.of(context).size.width * .95,

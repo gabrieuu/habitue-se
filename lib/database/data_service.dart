@@ -25,8 +25,8 @@ class DataService
   Future<void> init() async {
     habitoBox = await Hive.openBox(_habitosBox);
     registroBox = await Hive.openBox(_registroDiarioBox);
-    await habitoBox.clear();
-    await registroBox.clear();
+    // await habitoBox.clear();
+    // await registroBox.clear();
   }
 
   @override
@@ -44,9 +44,10 @@ class DataService
   Future<void> deleteHabitoHoje(String id) async {
     Habito habito = Habito.fromMap(habitoBox.get(id));
     habito.dataFim = DateTime.now().subtract(const Duration(days: 1));
-    await registroBox
-        .delete(registroBox.get(getRegistroDiaKey(habito.id, DateTime.now())));
     await habitoBox.put(habito.id, habito.toMap());
+    if (registroBox.containsKey(getRegistroDiaKey(habito.id, DateTime.now()))) {
+      await registroBox.delete(getRegistroDiaKey(habito.id, DateTime.now()));
+    }
   }
 
   @override
@@ -64,6 +65,13 @@ class DataService
   @override
   Future<List<RegistradosDoDia>> getAllRegistrosDiarios() async {
     var response = registroBox.values.toList();
+
+    // for (var habito in habitos) {
+    //   if (registro != null) {
+    //     response.add(registro);
+    //   }
+    // }
+
     return response.map((e) => RegistradosDoDia.fromMap(e)).toList();
   }
 
@@ -74,6 +82,8 @@ class DataService
   }
 
   String getRegistroDiaKey(String idHabito, DateTime date) {
-    return '$idHabito${date.toFullYear().toIso8601String().split('T')[0]}';
+    String key =
+        '$idHabito${date.toFullYear().toIso8601String().split('T')[0]}';
+    return key;
   }
 }

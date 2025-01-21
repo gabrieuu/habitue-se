@@ -172,7 +172,7 @@ class _HomePageState extends State<HomePage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (controller.getHabitosByData(DateTime.now()).isNotEmpty)
+        if (controller.getHabitosByData(controller.dataSelecionada).isNotEmpty)
           ProgressoHojeWidget(),
         Align(
           alignment: Alignment.centerLeft,
@@ -194,9 +194,9 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        if (controller.getHabitosByData(DateTime.now()).isEmpty)
+        if (controller.getHabitosByData(controller.dataSelecionada).isEmpty)
           const LottieEmptyList(),
-        if (controller.getHabitosByData(DateTime.now()).isNotEmpty)
+        if (controller.getHabitosByData(controller.dataSelecionada).isNotEmpty)
           ListaDeHabitos(),
       ],
     );

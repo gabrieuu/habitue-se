@@ -1,3 +1,4 @@
+import 'package:habitue_se/models/habito.dart';
 import 'package:habitue_se/models/registrados_do_dia.dart';
 
 mixin AbstractRegistroDiarioDatasource {

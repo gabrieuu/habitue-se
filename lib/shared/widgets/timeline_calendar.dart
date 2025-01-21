@@ -10,9 +10,14 @@ import 'dart:ui';
 
 import 'package:habitue_se/shared/temas.dart';
 
-class TimelineCalendar extends StatelessWidget {
+class TimelineCalendar extends StatefulWidget {
   TimelineCalendar({super.key});
 
+  @override
+  State<TimelineCalendar> createState() => _TimelineCalendarState();
+}
+
+class _TimelineCalendarState extends State<TimelineCalendar> {
   final HomeController controller = GetIt.instance<HomeController>();
 
   @override
@@ -24,13 +29,14 @@ class TimelineCalendar extends StatelessWidget {
             firstDate: DateTime(DateTime.now().year, DateTime.now().month, 1),
             lastDate:
                 DateTime(DateTime.now().year, DateTime.now().month + 1, 0),
-            focusedDate: DateTime.now(),
+            focusedDate: controller.dataSelecionada,
             selectionMode: const SelectionMode.autoCenter(),
             itemExtent: 60,
             headerOptions: const HeaderOptions(headerType: HeaderType.none),
             onDateChange: (date) {},
             itemBuilder: (context, date, isSelected, _, __, onTap) {
-              isSelected = date.isSameDate(DateTime.now());
+              isSelected = date.isSameDate(controller.dataSelecionada);
+
               return _buildDayTile(date, isSelected, onTap);
             },
           );
@@ -38,53 +44,69 @@ class TimelineCalendar extends StatelessWidget {
   }
 
   Widget _buildDayTile(DateTime date, bool isSelected, void Function() onTap) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Container(
-          width: 50,
-          height: 70,
-          margin: const EdgeInsets.all(2),
-          decoration: BoxDecoration(
-            color: isSelected ? Temas.primary : Colors.transparent,
-            border: Border.all(
-              color: Temas.primary.withOpacity(.2),
-              width: 0.5,
+    return GestureDetector(
+      onTap: (date.isBefore(DateTime.now()))
+          ? () {
+              controller.dataSelecionada = date;
+              onTap();
+              setState(() {});
+              controller.getAllRegistradosDoDia();
+            }
+          : null,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 50,
+            height: 70,
+            margin: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? Temas.primary
+                  : (!date.isBefore(DateTime.now()))
+                      ? Temas.boxColor
+                      : Colors.transparent,
+              border: Border.all(
+                color: Temas.primary.withOpacity(.2),
+                width: 0.5,
+              ),
+              borderRadius: BorderRadius.circular(8),
             ),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  dayByInt(date.weekday).substring(0, 3),
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black,
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    dayByInt(date.weekday).substring(0, 3),
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
                   ),
-                ),
-                Text(
-                  date.day.toString(),
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black,
-                    fontWeight: FontWeight.bold,
+                  Text(
+                    date.day.toString(),
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-        if (date.isBefore(DateTime.now().subtract(const Duration(days: 1))))
-          CustomPaint(
-            size: const Size(50, 70),
-            painter: _MyBorderPainter(
-                progress: controller.getPercentCompletado(date),
-                borderColor:
-                    percentColor(controller.getPercentCompletado(date))),
-          ),
-      ],
+          if (date.isBefore(DateTime.now().subtract(const Duration(days: 1))) ||
+              controller.dataSelecionada
+                  .isBefore(DateTime.now().subtract(const Duration(days: 1))))
+            CustomPaint(
+              size: const Size(50, 70),
+              painter: _MyBorderPainter(
+                  progress: controller.getPercentCompletado(date),
+                  borderColor:
+                      percentColor(controller.getPercentCompletado(date))),
+            ),
+        ],
+      ),
     );
   }
 }

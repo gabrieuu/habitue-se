@@ -8,6 +8,7 @@ import 'package:habitue_se/pages/home_page/controller/home_controller.dart';
 import 'package:habitue_se/pages/home_page/widgets/percente_indicator_widget.dart';
 import 'package:habitue_se/repository/concrete_habitos_repository.dart';
 import 'package:habitue_se/shared/color_extension.dart';
+import 'package:habitue_se/shared/data_utils.dart';
 import 'package:habitue_se/shared/temas.dart';
 
 class HabitoTileWidget extends StatelessWidget {
@@ -110,37 +111,40 @@ class HabitoTileWidget extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Gap(10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    IconButton(
+                const Gap(20),
+                if (controller.dataSelecionada.isSameDate(DateTime.now()))
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      IconButton(
+                          onPressed: () {
+                            controller.ajustarRegistroHabitoDiario(habito,
+                                quantidade: -1);
+                          },
+                          style: ElevatedButton.styleFrom(
+                              foregroundColor: hexToColor(habito.hexColor!),
+                              backgroundColor:
+                                  hexToColor(habito.hexColor!).withOpacity(0.2),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              )),
+                          icon: const Icon(Icons.remove)),
+                      IconButton(
                         onPressed: () {
                           controller.ajustarRegistroHabitoDiario(habito,
-                              quantidade: -1);
+                              quantidade: 1);
                         },
                         style: ElevatedButton.styleFrom(
-                            foregroundColor: Temas.primary,
-                            backgroundColor: Temas.secondary.withOpacity(0.5),
+                            foregroundColor: hexToColor(habito.hexColor!),
+                            backgroundColor:
+                                hexToColor(habito.hexColor!).withOpacity(0.2),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             )),
-                        icon: const Icon(Icons.remove)),
-                    IconButton(
-                      onPressed: () {
-                        controller.ajustarRegistroHabitoDiario(habito,
-                            quantidade: 1);
-                      },
-                      style: ElevatedButton.styleFrom(
-                          foregroundColor: Temas.primary,
-                          backgroundColor: Temas.secondary.withOpacity(0.5),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          )),
-                      icon: const Icon(Icons.add),
-                    ),
-                  ],
-                )
+                        icon: const Icon(Icons.add),
+                      ),
+                    ],
+                  )
               ],
             ),
           );
@@ -160,9 +164,15 @@ class PopUpMenuWidget extends StatelessWidget {
       itemBuilder: (context) {
         return [
           PopupMenuItem(
-            onTap: () {
-              context.push('/novo-habito', extra: habito);
-            },
+            onTap: (controller.dataSelecionada.isSameDate(DateTime.now()))
+                ? () {
+                    context.push('/novo-habito', extra: habito);
+                  }
+                : () {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content:  Text(
+                            'Não é possível editar hábitos de dias anteriores')));
+                  },
             child: const Text('Editar'),
           ),
           PopupMenuItem(
@@ -177,9 +187,7 @@ class PopUpMenuWidget extends StatelessWidget {
                       actions: [
                         TextButton(
                             onPressed: () {
-                              habito.dataFim = DateTime.now()
-                                  .subtract(const Duration(days: 1));
-                              controller.addNewHabito(habito);
+                              controller.deleteHabito(habito);
                               Navigator.pop(context);
                             },
                             child: const Text('Sim')),

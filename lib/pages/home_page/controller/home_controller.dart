@@ -12,7 +12,10 @@ import 'package:uuid/uuid.dart';
 class HomeController extends ChangeNotifier {
   List<Habito> habitos = [];
   List<Tarefa> tarefas = [];
+  Set<RegistradosDoDia> registrosCalendario = {};
   Set<RegistradosDoDia> registradosDoDia = {};
+
+  DateTime dataSelecionada = DateTime.now();
 
   StatusEnum statusTarefasLoading = StatusEnum.NONE;
   StatusEnum statusHabitosLoading = StatusEnum.NONE;
@@ -47,12 +50,12 @@ class HomeController extends ChangeNotifier {
     }
   }
 
-  deleteHabito(Habito habito) {
+  deleteHabito(Habito habito) async {
     var index = habitos.indexWhere((element) => element.id == habito.id);
     habitos.remove(habito);
     notifyListeners();
     try {
-      habitosRepository.delete(habito.id);
+      await habitosRepository.delete(habito.id);
     } catch (e) {
       habitos.insert(index, habito);
       notifyListeners();
@@ -114,7 +117,8 @@ class HomeController extends ChangeNotifier {
 
   bool isDateWithinRange(DateTime date, DateTime startDate, DateTime? endDate) {
     if (endDate == null) {
-      return date.isAfter(startDate) || date.isAtSameMomentAs(startDate);
+      return date.isAfter(startDate) ||
+          date.toFullYear().isAtSameMomentAs(startDate.toFullYear());
     }
 
     return (date.isAfter(startDate) || date.isAtSameMomentAs(startDate)) &&
@@ -135,7 +139,7 @@ class HomeController extends ChangeNotifier {
     }
   }
 
-  Future<void> getAllRegistradosDoDia() async {
+  Future<void> getAllRegistradosDoDia({DateTime? date}) async {
     try {
       List<RegistradosDoDia> registradosDoDia =
           await habitosRepository.getRegistradosDoDia();
@@ -169,10 +173,7 @@ class HomeController extends ChangeNotifier {
     var data = getRegistradosDoDiaSelecionado(day ?? DateTime.now())
         .firstWhere((e) => e.idHabito == idHabito, orElse: () {
       return RegistradosDoDia(
-          idHabito: idHabito,
-          diaAtual: day ??
-              DateTime(DateTime.now().year, DateTime.now().month,
-                  DateTime.now().day));
+          idHabito: idHabito, diaAtual: day ?? DateTime.now().toFullYear());
     });
     return data;
   }
@@ -182,7 +183,7 @@ class HomeController extends ChangeNotifier {
     double totalObjetivo = getTotalObjetivo(day);
     double percent = totalCompletado / totalObjetivo;
 
-    if(totalObjetivo == 0){
+    if (totalObjetivo == 0) {
       return 0.0;
     }
 

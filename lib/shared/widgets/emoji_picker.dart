@@ -23,6 +23,7 @@ void emojiSelector(
           onEmojiSelected: (category, emoji) {
             if (textEditingController != null) {
               textEditingController.text = emoji.emoji;
+              Navigator.pop(context);
             }
           },
         );

@@ -20,6 +20,9 @@ class HabitoTileWidget extends StatelessWidget {
     return ListenableBuilder(
         listenable: controller,
         builder: (context, _) {
+          RegistradosDoDia registradoDoDia =
+              controller.getRegistradosByHabitoId(habito.id);
+
           return Container(
             padding: const EdgeInsets.all(10),
             width: MediaQuery.of(context).size.width * 0.4,
@@ -79,9 +82,7 @@ class HabitoTileWidget extends StatelessWidget {
                     child: PercentIndicatorWidget(
                       radius: 60,
                       lineWidth: 15,
-                      percent: controller
-                              .getRegistradosByHabitoId(habito.id)
-                              .completadosHoje /
+                      percent: registradoDoDia.completadosHoje /
                           habito.objetivoDiario,
                       progressColor: habito.hexColor != null
                           ? hexToColor(habito.hexColor!)
@@ -92,7 +93,7 @@ class HabitoTileWidget extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              '${controller.getRegistradosByHabitoId(habito.id).completadosHoje.toPrecision} / ${habito.objetivoDiario.toPrecision}',
+                              '${registradoDoDia.completadosHoje.toPrecision} / ${habito.objetivoDiario.toPrecision}',
                               style: const TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.bold),
                             ),
@@ -170,7 +171,7 @@ class PopUpMenuWidget extends StatelessWidget {
                   }
                 : () {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content:  Text(
+                        content: Text(
                             'Não é possível editar hábitos de dias anteriores')));
                   },
             child: const Text('Editar'),

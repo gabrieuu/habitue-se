@@ -1,10 +1,15 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:habitue_se/models/custom_notification.dart';
 import 'package:habitue_se/models/habito.dart';
 import 'package:habitue_se/models/registrados_do_dia.dart';
 import 'package:habitue_se/models/tarefa.dart';
 import 'package:habitue_se/repository/abstract_crud_repository.dart';
 import 'package:habitue_se/repository/abstract_habitos_repository.dart';
 import 'package:habitue_se/repository/abstract_tarefas_repository.dart';
+import 'package:habitue_se/services/notification_service.dart';
 import 'package:habitue_se/shared/data_utils.dart';
 import 'package:habitue_se/shared/status_enum.dart';
 import 'package:uuid/uuid.dart';
@@ -44,6 +49,7 @@ class HomeController extends ChangeNotifier {
     notifyListeners();
     try {
       await habitosRepository.add(newHabito);
+      GetIt.instance<NotificationService>().addNotificationForHabit(newHabito);
     } catch (e) {
       habitos.remove(newHabito);
       notifyListeners();
@@ -56,6 +62,7 @@ class HomeController extends ChangeNotifier {
     notifyListeners();
     try {
       await habitosRepository.delete(habito.id);
+      GetIt.instance<NotificationService>().cancelNotificationForHabit(habito);
     } catch (e) {
       habitos.insert(index, habito);
       notifyListeners();
@@ -95,6 +102,9 @@ class HomeController extends ChangeNotifier {
       statusHabitosLoading = StatusEnum.LOADING;
       notifyListeners();
       habitos = await habitosRepository.get();
+      await GetIt.instance<NotificationService>()
+          .sheduleNotificationForListHabits(getHabitosByData(DateTime.now()));
+      log('sucessp');
       statusHabitosLoading = StatusEnum.SUCESS;
       notifyListeners();
     } catch (e) {

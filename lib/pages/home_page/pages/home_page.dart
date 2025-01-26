@@ -1,12 +1,16 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:habitue_se/models/custom_notification.dart';
 import 'package:habitue_se/models/tarefa.dart';
 import 'package:habitue_se/pages/bottom_app_bar/bottom_app_bar_controller.dart';
 import 'package:habitue_se/pages/home_page/controller/home_controller.dart';
 import 'package:habitue_se/pages/home_page/widgets/lista_de_habitos.dart';
 import 'package:habitue_se/pages/home_page/widgets/progresso_hoje_widget.dart';
+import 'package:habitue_se/services/notification_service.dart';
 import 'package:habitue_se/shared/status_enum.dart';
 import 'package:habitue_se/shared/temas.dart';
 import 'package:habitue_se/shared/widgets/timeline_calendar.dart';
@@ -28,6 +32,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     bottomAppBarController.currentIndex = 0;
+
     super.initState();
   }
 

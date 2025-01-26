@@ -5,10 +5,19 @@ import 'package:habitue_se/repository/abstract_habitos_repository.dart';
 import 'package:habitue_se/repository/abstract_tarefas_repository.dart';
 import 'package:habitue_se/repository/concrete_habitos_repository.dart';
 import 'package:habitue_se/repository/concrete_tarefas_repository.dart';
+import 'package:habitue_se/services/firebase_messaging_service.dart';
+import 'package:habitue_se/services/notification_service.dart';
 
 setupModules() {
+  _setupNotification();
   _setupModulesBottomAppBar();
   _setupModulesHomePage();
+}
+
+_setupNotification() {
+  GetIt.instance.registerSingleton<NotificationService>(NotificationService());
+  GetIt.instance.registerLazySingleton<FirebaseMessagingService>(
+      () => FirebaseMessagingService(GetIt.instance<NotificationService>()));
 }
 
 _setupModulesBottomAppBar() {

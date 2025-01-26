@@ -1,15 +1,18 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:habitue_se/database/abstract_habitos_datasource.dart';
 import 'package:habitue_se/database/abstract_registrodiario_datasource.dart';
 import 'package:habitue_se/models/habito.dart';
 import 'package:habitue_se/models/registrados_do_dia.dart';
+import 'package:habitue_se/preferences/shared_prefs.dart';
 import 'package:habitue_se/shared/data_utils.dart';
 import 'package:hive/hive.dart';
 
 class DataService
     with AbstractHabitoDatasource, AbstractRegistroDiarioDatasource {
   static DataService? _instance;
+
   final String _habitosBox = 'habitos';
   final String _registroDiarioBox = 'registroDiario';
   late Box habitoBox;
@@ -37,6 +40,19 @@ class DataService
 
   @override
   Future<void> addhabito(Habito habito) async {
+    // String token =
+    //     SharedPrefs.getString(KeysSharedPreferences.NOTIFICATION_TOKEN);
+
+    // await FirebaseFirestore.instance
+    //     .collection('notifications')
+    //     .doc(token)
+    //     .set({
+    //   'deviceToken': token,
+    //   'startTime': habito.dataInicio.toIso8601String(),
+    //   'intervalHours': 4,
+    //   'enabled': true,
+    // });
+
     await habitoBox.put(habito.id, habito.toMap());
   }
 
@@ -65,13 +81,6 @@ class DataService
   @override
   Future<List<RegistradosDoDia>> getAllRegistrosDiarios() async {
     var response = registroBox.values.toList();
-
-    // for (var habito in habitos) {
-    //   if (registro != null) {
-    //     response.add(registro);
-    //   }
-    // }
-
     return response.map((e) => RegistradosDoDia.fromMap(e)).toList();
   }
 

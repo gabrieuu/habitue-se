@@ -61,11 +61,7 @@ class _TimelineCalendarState extends State<TimelineCalendar> {
             height: 70,
             margin: const EdgeInsets.all(2),
             decoration: BoxDecoration(
-              color: isSelected
-                  ? Temas.primary
-                  : (!date.isBefore(DateTime.now()))
-                      ? Temas.boxColor
-                      : Colors.transparent,
+              color: getBackbroundColor(date, isSelected),
               border: Border.all(
                 color: Temas.primary.withOpacity(.2),
                 width: 0.5,
@@ -108,6 +104,20 @@ class _TimelineCalendarState extends State<TimelineCalendar> {
         ],
       ),
     );
+  }
+
+  Color getBackbroundColor(DateTime date, bool isSelected) {
+    if (isSelected) {
+      return Temas.primary;
+    }
+
+    if (date.isSameDate(DateTime.now())) {
+      return Temas.secondary.withOpacity(.5);
+    } else if (date.isAfter(DateTime.now())) {
+      return Temas.boxColor;
+    } else {
+      return Colors.transparent;
+    }
   }
 }
 

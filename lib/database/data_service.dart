@@ -57,13 +57,24 @@ class DataService
   }
 
   @override
-  Future<void> deleteHabitoHoje(String id) async {
+  Future<void> deleteHabitoByData(String id, DateTime date) async {
     Habito habito = Habito.fromMap(habitoBox.get(id));
-    habito.dataFim = DateTime.now().subtract(const Duration(days: 1));
+    habito.dataFim = date.subtract(const Duration(days: 1));
     await habitoBox.put(habito.id, habito.toMap());
-    if (registroBox.containsKey(getRegistroDiaKey(habito.id, DateTime.now()))) {
-      await registroBox.delete(getRegistroDiaKey(habito.id, DateTime.now()));
+    if (registroBox.containsKey(getRegistroDiaKey(habito.id, date))) {
+      await registroBox.delete(getRegistroDiaKey(habito.id, date));
     }
+  }
+
+  Future<void> deleteFullHabito(String id) async {
+    await habitoBox.delete(id);
+    List<RegistradosDoDia> registradoDoDia =
+        registroBox.values.map((e) => RegistradosDoDia.fromMap(e)).toList();
+    List<String> listaDeKeys = registradoDoDia
+        .where((e) => e.idHabito == id)
+        .map((e) => e.diaAtual.toIso8601String().split('T')[0])
+        .toList();
+    await registroBox.deleteAll(listaDeKeys);
   }
 
   @override
@@ -73,7 +84,7 @@ class DataService
   }
 
   @override
-  Future<void> updateHabito(String id) {
+  Future<void> updateHabito(Habito habito) {
     // TODO: implement updateHabito
     throw UnimplementedError();
   }

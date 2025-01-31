@@ -4,6 +4,7 @@ import 'package:habitue_se/repository/abstract_crud_repository.dart';
 
 abstract class AbstractHabitosRepository
     with AbstractCrudRepository<Habito, String> {
+  Future<void> deleteByDate(String id, DateTime date);
   Future<void> addRegistradosDoDia(RegistradosDoDia data);
   Future<List<RegistradosDoDia>> getRegistradosDoDia();
 }

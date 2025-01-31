@@ -17,7 +17,12 @@ class ConcreteHabitosRepository implements AbstractHabitosRepository {
 
   @override
   Future<void> delete(String object) async {
-    await _dataService.deleteHabitoHoje(object);
+    await _dataService.deleteFullHabito(object);
+  }
+  
+  @override
+  Future<void> deleteByDate(String object, DateTime date) async {
+    await _dataService.deleteFullHabito(object);
   }
 
   @override

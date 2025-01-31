@@ -11,6 +11,8 @@ import 'package:habitue_se/pages/home_page/controller/home_controller.dart';
 import 'package:habitue_se/pages/home_page/widgets/lista_de_habitos.dart';
 import 'package:habitue_se/pages/home_page/widgets/progresso_hoje_widget.dart';
 import 'package:habitue_se/services/notification_service.dart';
+import 'package:habitue_se/shared/data_utils.dart';
+import 'package:habitue_se/shared/dia_da_semana.dart';
 import 'package:habitue_se/shared/status_enum.dart';
 import 'package:habitue_se/shared/temas.dart';
 import 'package:habitue_se/shared/widgets/timeline_calendar.dart';
@@ -32,7 +34,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     bottomAppBarController.currentIndex = 0;
-
+    controller.init();
     super.initState();
   }
 
@@ -194,7 +196,9 @@ class _HomePageState extends State<HomePage> {
                       color: Temas.blackColor),
                 ),
                 const Gap(5),
-                const Chip(padding: EdgeInsets.all(1), label: Text('Hoje'))
+                Chip(
+                    padding: EdgeInsets.all(1),
+                    label: Text(formatDate(controller.dataSelecionada)))
               ],
             ),
           ),
@@ -206,6 +210,16 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
+}
+
+String formatDate(DateTime date) {
+  String newDate =
+      '${date.day} de ${mesesDoAno[date.month]!.substring(0, 3)} de ${date.year}';
+  if (date.isSameDate(DateTime.now())) {
+    newDate = 'Hoje';
+  }
+
+  return newDate;
 }
 
 class LottieEmptyList extends StatelessWidget {

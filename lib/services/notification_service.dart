@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habitue_se/models/custom_notification.dart';
 import 'package:habitue_se/models/habito.dart';
 import 'package:habitue_se/setup_routes.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as timezone;
 import 'package:timezone/data/latest_all.dart' as timezone;
 
@@ -29,6 +30,10 @@ class NotificationService {
   }
 
   Future<void> _initializeNotifications() async {
+    var status = await Permission.notification.status;
+    if (!status.isGranted) {
+      await Permission.notification.request();
+    }
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     await _localNotificationPlugin.initialize(
       const InitializationSettings(android: android),
@@ -93,10 +98,9 @@ class NotificationService {
     );
   }
 
-  Future<void> sheduleNotificationForListHabits(List<Habito> habitos) async {
+  Future<void> showNotificationForListHabits(List<Habito> habitos) async {
     await Future.forEach(habitos, (habito) async {
-      await cancelNotificationForHabit(habito);
-      await showNotificationSchedule(
+      await showNotification(
         CustomNotification(
           id: habito.id.hashCode.abs(),
           title: 'Lembre-se de ${habito.nome} hoje!',
@@ -111,49 +115,16 @@ class NotificationService {
     await _localNotificationPlugin.cancel(habito.id.hashCode.abs());
   }
 
-  addNotificationForHabit(Habito habito, {String? title, String? description}) {
-    showNotificationSchedule(
-      CustomNotification(
-        id: habito.id.hashCode.abs(),
-        title: title ?? 'Lembre-se de ${habito.nome} hoje!',
-        description: description ??
-            '${habito.nome} é um hábito que você precisa manter, não esqueça de completá-lo hoje!',
-      ),
-    );
-  }
-
-  Future<void> showNotificationSchedule(CustomNotification notification,
-      {Time? time}) async {
-    _localNotificationPlugin.zonedSchedule(
-        notification.id,
-        notification.title,
-        notification.description,
-        _nextInstanceOfTime(time ?? Time(hour: 8, minute: 0)),
-        _notificationDetails,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        payload: notification.payload,
-        matchDateTimeComponents: DateTimeComponents.time);
-  }
-
-  // Função para calcular o próximo horário
-  timezone.TZDateTime _nextInstanceOfTime(Time time) {
+  bool estaNoHorarioDeNotificar(List<Time> horarios) {
     final timezone.TZDateTime now = timezone.TZDateTime.now(timezone.local);
-    timezone.TZDateTime scheduledDate = timezone.TZDateTime(
-      timezone.local,
-      now.year,
-      now.month,
-      now.day,
-      time.hour,
-      time.minute,
-    );
 
-    // Se o horário já passou hoje, agende para amanhã
-    if (scheduledDate.isBefore(now)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    for (var horario in horarios) {
+      if (horario.hour == now.hour) {
+        return true;
+      }
     }
-    return scheduledDate;
+
+    return false;
   }
 
   Future<void> checkForNotification() async {
@@ -169,5 +140,5 @@ class Time {
   final int hour;
   final int minute;
 
-  Time({required this.hour, required this.minute});
+  Time(this.hour, this.minute);
 }

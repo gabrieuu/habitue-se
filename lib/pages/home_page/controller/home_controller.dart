@@ -26,16 +26,13 @@ class HomeController extends ChangeNotifier {
   StatusEnum statusHabitosLoading = StatusEnum.NONE;
 
   AbstractHabitosRepository habitosRepository;
-  AbstractTarefasRepository tarefasRepository;
 
-  HomeController(this.habitosRepository, this.tarefasRepository) {
-    init();
-  }
+  HomeController(this.habitosRepository);
 
   Future<void> init() async {
     await getAllHabitos();
     await getAllRegistradosDoDia();
-    await getAllTarefas();
+    // await getAllTarefas();
   }
 
   addNewHabito(Habito newHabito) async {
@@ -49,19 +46,20 @@ class HomeController extends ChangeNotifier {
     notifyListeners();
     try {
       await habitosRepository.add(newHabito);
-      GetIt.instance<NotificationService>().addNotificationForHabit(newHabito);
     } catch (e) {
       habitos.remove(newHabito);
       notifyListeners();
     }
   }
 
-  deleteHabito(Habito habito) async {
+  deleteHabitoByDate(Habito habito, {DateTime? date}) async {
     var index = habitos.indexWhere((element) => element.id == habito.id);
     habitos.remove(habito);
     notifyListeners();
     try {
-      await habitosRepository.delete(habito.id);
+      (date != null)
+          ? await habitosRepository.deleteByDate(habito.id, date)
+          : await habitosRepository.delete(habito.id);
       GetIt.instance<NotificationService>().cancelNotificationForHabit(habito);
     } catch (e) {
       habitos.insert(index, habito);
@@ -102,9 +100,7 @@ class HomeController extends ChangeNotifier {
       statusHabitosLoading = StatusEnum.LOADING;
       notifyListeners();
       habitos = await habitosRepository.get();
-      await GetIt.instance<NotificationService>()
-          .sheduleNotificationForListHabits(getHabitosByData(DateTime.now()));
-      log('sucessp');
+      habitos.sort((a, b) => a.id.compareTo(b.id));
       statusHabitosLoading = StatusEnum.SUCESS;
       notifyListeners();
     } catch (e) {
@@ -135,19 +131,19 @@ class HomeController extends ChangeNotifier {
         (date.isBefore(endDate) || date.isAtSameMomentAs(endDate));
   }
 
-  Future<void> getAllTarefas() async {
-    try {
-      statusTarefasLoading = StatusEnum.LOADING;
-      await Future.delayed(const Duration(seconds: 3));
-      notifyListeners();
-      tarefas = await tarefasRepository.getTarefas();
-      statusTarefasLoading = StatusEnum.SUCESS;
-    } catch (e) {
-      statusTarefasLoading = StatusEnum.ERROR;
-    } finally {
-      notifyListeners();
-    }
-  }
+  // Future<void> getAllTarefas() async {
+  //   try {
+  //     statusTarefasLoading = StatusEnum.LOADING;
+  //     await Future.delayed(const Duration(seconds: 3));
+  //     notifyListeners();
+  //     tarefas = await tarefasRepository.getTarefas();
+  //     statusTarefasLoading = StatusEnum.SUCESS;
+  //   } catch (e) {
+  //     statusTarefasLoading = StatusEnum.ERROR;
+  //   } finally {
+  //     notifyListeners();
+  //   }
+  // }
 
   Future<void> getAllRegistradosDoDia({DateTime? date}) async {
     try {

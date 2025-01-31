@@ -8,29 +8,31 @@ import 'package:habitue_se/repository/concrete_tarefas_repository.dart';
 import 'package:habitue_se/services/firebase_messaging_service.dart';
 import 'package:habitue_se/services/notification_service.dart';
 
+class Modules {
+  static setupNotification() {
+    GetIt.instance
+        .registerSingleton<NotificationService>(NotificationService());
+    // GetIt.instance.registerLazySingleton<FirebaseMessagingService>(
+    //     () => FirebaseMessagingService(GetIt.instance<NotificationService>()));
+  }
+
+  static setupModulesBottomAppBar() {
+    GetIt.instance.registerLazySingleton<BottomAppBarController>(
+        () => BottomAppBarController());
+  }
+
+  static setupModulesHomePage() {
+    GetIt.instance.registerLazySingleton<AbstractHabitosRepository>(
+        () => ConcreteHabitosRepository());
+    GetIt.instance.registerLazySingleton<AbstractTarefasRepository>(
+        () => ConcreteTarefasRepository());
+    GetIt.instance.registerLazySingleton(
+        () => HomeController(GetIt.instance<AbstractHabitosRepository>()));
+  }
+}
+
 setupModules() {
-  _setupNotification();
-  _setupModulesBottomAppBar();
-  _setupModulesHomePage();
-}
-
-_setupNotification() {
-  GetIt.instance.registerSingleton<NotificationService>(NotificationService());
-  GetIt.instance.registerLazySingleton<FirebaseMessagingService>(
-      () => FirebaseMessagingService(GetIt.instance<NotificationService>()));
-}
-
-_setupModulesBottomAppBar() {
-  GetIt.instance.registerLazySingleton<BottomAppBarController>(
-      () => BottomAppBarController());
-}
-
-_setupModulesHomePage() {
-  GetIt.instance.registerLazySingleton<AbstractHabitosRepository>(
-      () => ConcreteHabitosRepository());
-  GetIt.instance.registerLazySingleton<AbstractTarefasRepository>(
-      () => ConcreteTarefasRepository());
-  GetIt.instance.registerLazySingleton(() => HomeController(
-      GetIt.instance<AbstractHabitosRepository>(),
-      GetIt.instance<AbstractTarefasRepository>()));
+  Modules.setupNotification();
+  Modules.setupModulesBottomAppBar();
+  Modules.setupModulesHomePage();
 }

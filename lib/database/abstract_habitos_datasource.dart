@@ -4,6 +4,7 @@ mixin AbstractHabitoDatasource {
   Future<void> addAllHabito(List<Habito> habitos);
   Future<void> addhabito(Habito habito);
   Future<List<Habito>> getAllHabitos();
-  Future<void> deleteHabitoHoje(String id);
-  Future<void> updateHabito(String id);
+  Future<void> deleteHabitoByData(String id, DateTime date);
+  Future<void> deleteFullHabito(String id); 
+  Future<void> updateHabito(Habito habito);
 }

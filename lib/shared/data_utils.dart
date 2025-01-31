@@ -8,4 +8,10 @@ extension DateUtilsExtension on DateTime {
   DateTime toFullYear() {
     return DateTime((this).year, (this).month, (this).day);
   }
+
+  String get formatDateString{
+    var date = (this).toIso8601String().split('T')[0].split('-');
+    return date.reversed.join('/');
+
+  }
 }

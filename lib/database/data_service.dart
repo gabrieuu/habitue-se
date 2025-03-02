@@ -1,11 +1,7 @@
-import 'dart:convert';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:habitue_se/database/abstract_habitos_datasource.dart';
 import 'package:habitue_se/database/abstract_registrodiario_datasource.dart';
 import 'package:habitue_se/models/habito.dart';
 import 'package:habitue_se/models/registrados_do_dia.dart';
-import 'package:habitue_se/preferences/shared_prefs.dart';
 import 'package:habitue_se/shared/data_utils.dart';
 import 'package:hive/hive.dart';
 

@@ -1,18 +1,10 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-import 'package:habitue_se/models/custom_notification.dart';
 import 'package:habitue_se/models/habito.dart';
 import 'package:habitue_se/models/registrados_do_dia.dart';
 import 'package:habitue_se/models/tarefa.dart';
-import 'package:habitue_se/repository/abstract_crud_repository.dart';
-import 'package:habitue_se/repository/abstract_habitos_repository.dart';
-import 'package:habitue_se/repository/abstract_tarefas_repository.dart';
-import 'package:habitue_se/services/notification_service.dart';
+import 'package:habitue_se/pages/home_page/service/habito_service.dart';
 import 'package:habitue_se/shared/data_utils.dart';
 import 'package:habitue_se/shared/status_enum.dart';
-import 'package:uuid/uuid.dart';
 
 class HomeController extends ChangeNotifier {
   List<Habito> habitos = [];
@@ -20,14 +12,14 @@ class HomeController extends ChangeNotifier {
   Set<RegistradosDoDia> registrosCalendario = {};
   Set<RegistradosDoDia> registradosDoDia = {};
 
+  HabitoService habitoService;
+
   DateTime dataSelecionada = DateTime.now();
 
   StatusEnum statusTarefasLoading = StatusEnum.NONE;
   StatusEnum statusHabitosLoading = StatusEnum.NONE;
 
-  AbstractHabitosRepository habitosRepository;
-
-  HomeController(this.habitosRepository);
+  HomeController(this.habitoService);
 
   Future<void> init() async {
     await getAllHabitos();
@@ -45,7 +37,7 @@ class HomeController extends ChangeNotifier {
 
     notifyListeners();
     try {
-      await habitosRepository.add(newHabito);
+      await habitoService.add(newHabito);
     } catch (e) {
       habitos.remove(newHabito);
       notifyListeners();
@@ -58,9 +50,8 @@ class HomeController extends ChangeNotifier {
     notifyListeners();
     try {
       (date != null)
-          ? await habitosRepository.deleteByDate(habito.id, date)
-          : await habitosRepository.delete(habito.id);
-      GetIt.instance<NotificationService>().cancelNotificationForHabit(habito);
+          ? await habitoService.deleteByDate(habito, date)
+          : await habitoService.delete(habito);
     } catch (e) {
       habitos.insert(index, habito);
       notifyListeners();
@@ -86,7 +77,7 @@ class HomeController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await habitosRepository.addRegistradosDoDia(data);
+      await habitoService.addRegistradosDoDia(data);
     } catch (e) {
       registradosDoDia.remove(data);
       data.completadosHoje -= quantidade;
@@ -99,7 +90,7 @@ class HomeController extends ChangeNotifier {
     try {
       statusHabitosLoading = StatusEnum.LOADING;
       notifyListeners();
-      habitos = await habitosRepository.get();
+      habitos = await habitoService.getHabitos();
       habitos.sort((a, b) => a.id.compareTo(b.id));
       statusHabitosLoading = StatusEnum.SUCESS;
       notifyListeners();
@@ -110,26 +101,8 @@ class HomeController extends ChangeNotifier {
     }
   }
 
-  List<Habito> getHabitosByData(DateTime date) {
-    if (habitos.isEmpty) {
-      return [];
-    }
-    var list = habitos
-        .where((element) =>
-            isDateWithinRange(date, element.dataInicio, element.dataFim))
-        .toList();
-    return list;
-  }
-
-  bool isDateWithinRange(DateTime date, DateTime startDate, DateTime? endDate) {
-    if (endDate == null) {
-      return date.isAfter(startDate) ||
-          date.toFullYear().isAtSameMomentAs(startDate.toFullYear());
-    }
-
-    return (date.isAfter(startDate) || date.isAtSameMomentAs(startDate)) &&
-        (date.isBefore(endDate) || date.isAtSameMomentAs(endDate));
-  }
+  List<Habito> getHabitosByData(DateTime date) =>
+      habitoService.getHabitosByData(date, habitos);
 
   // Future<void> getAllTarefas() async {
   //   try {
@@ -148,7 +121,7 @@ class HomeController extends ChangeNotifier {
   Future<void> getAllRegistradosDoDia({DateTime? date}) async {
     try {
       List<RegistradosDoDia> registradosDoDia =
-          await habitosRepository.getRegistradosDoDia();
+          await habitoService.getRegistradosDoDia();
       this.registradosDoDia = registradosDoDia.toSet();
     } finally {
       notifyListeners();
@@ -170,9 +143,8 @@ class HomeController extends ChangeNotifier {
       return [];
     }
 
-    return registradosDoDia
-        .where((element) => element.diaAtual.isSameDate(day))
-        .toList();
+    return habitoService.getRegistradosDoDiaSelecionado(
+        day, registradosDoDia.toList());
   }
 
   RegistradosDoDia getRegistradosByHabitoId(String idHabito, {DateTime? day}) {
@@ -196,32 +168,9 @@ class HomeController extends ChangeNotifier {
     return percent;
   }
 
-  double getTotalCompletado(DateTime day) {
-    double totalCompletado = 0;
-    List<RegistradosDoDia> registradosDoDia =
-        getRegistradosDoDiaSelecionado(day);
-    if (registradosDoDia.isEmpty) {
-      return 0;
-    }
-    for (var item in registradosDoDia) {
-      totalCompletado += item.completadosHoje;
-    }
-    return totalCompletado;
-  }
+  double getTotalCompletado(DateTime day) =>
+      habitoService.getTotalCompletado(day, registradosDoDia.toList());
 
-  double getTotalObjetivo(DateTime date) {
-    double totalObjetivo = 0;
-    for (var item in habitos) {
-      if (date.toFullYear().isAfter(item.dataInicio.toFullYear()) ||
-          date.toFullYear().isSameDate(item.dataInicio.toFullYear())) {
-        if (item.dataFim != null &&
-            (date.toFullYear().isAfter(item.dataFim!.toFullYear()) ||
-                date.toFullYear().isSameDate(item.dataFim!.toFullYear()))) {
-          continue;
-        }
-        totalObjetivo += item.objetivoDiario;
-      }
-    }
-    return totalObjetivo;
-  }
+  double getTotalObjetivo(DateTime date) =>
+      habitoService.getTotalObjetivo(date, habitos);
 }

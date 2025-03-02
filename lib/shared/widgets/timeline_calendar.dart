@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
@@ -6,8 +7,6 @@ import 'package:get_it/get_it.dart';
 import 'package:habitue_se/pages/home_page/controller/home_controller.dart';
 import 'package:habitue_se/pages/home_page/percent_color.dart';
 import 'package:habitue_se/shared/data_utils.dart';
-import 'dart:ui';
-
 import 'package:habitue_se/shared/temas.dart';
 
 class TimelineCalendar extends StatefulWidget {

@@ -1,11 +1,12 @@
+import 'package:event_bus/event_bus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:habitue_se/pages/bottom_app_bar/bottom_app_bar_controller.dart';
 import 'package:habitue_se/pages/home_page/controller/home_controller.dart';
+import 'package:habitue_se/pages/home_page/service/habito_service.dart';
 import 'package:habitue_se/repository/abstract_habitos_repository.dart';
 import 'package:habitue_se/repository/abstract_tarefas_repository.dart';
 import 'package:habitue_se/repository/concrete_habitos_repository.dart';
 import 'package:habitue_se/repository/concrete_tarefas_repository.dart';
-import 'package:habitue_se/services/firebase_messaging_service.dart';
 import 'package:habitue_se/services/notification_service.dart';
 
 class Modules {
@@ -26,12 +27,15 @@ class Modules {
         () => ConcreteHabitosRepository());
     GetIt.instance.registerLazySingleton<AbstractTarefasRepository>(
         () => ConcreteTarefasRepository());
+    GetIt.instance.registerLazySingleton(() => HabitoService(
+        habitoRepository: GetIt.instance<AbstractHabitosRepository>()));
     GetIt.instance.registerLazySingleton(
-        () => HomeController(GetIt.instance<AbstractHabitosRepository>()));
+        () => HomeController(GetIt.instance<HabitoService>()));
   }
 }
 
 setupModules() {
+  GetIt.instance.registerSingleton<EventBus>(EventBus());
   Modules.setupNotification();
   Modules.setupModulesBottomAppBar();
   Modules.setupModulesHomePage();

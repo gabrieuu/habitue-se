@@ -1,4 +1,4 @@
-import 'registrados_do_dia.dart';
+import 'package:habitue_se/models/habito_notification.dart';
 
 class Habito {
   String id;
@@ -11,7 +11,9 @@ class Habito {
   DateTime dataInicio;
   DateTime? dataFim;
   String? hexColor;
+  TimeOfdayHabitos? horarioDoHabito;
   int completadosTotal;
+  HabitoNotification habitoNotification;
 
   Habito(
       {required this.id,
@@ -24,7 +26,9 @@ class Habito {
       required this.dataInicio,
       this.dataFim,
       required this.hexColor,
-      required this.objetivoDiario});
+      required this.objetivoDiario,
+      this.horarioDoHabito,
+      required this.habitoNotification});
 
   Map<String, dynamic> toMap() {
     return {
@@ -37,6 +41,8 @@ class Habito {
       'hex_color': hexColor,
       'descricao': descricao,
       'objetivo_diario': objetivoDiario,
+      'horario_do_habito': horarioDoHabito?.toMap(),
+      'habito_notification': habitoNotification.toMap(),
     };
   }
 
@@ -51,6 +57,12 @@ class Habito {
       descricao: map['descricao'] ?? '',
       dataFim: map['data_fim'] != null ? DateTime.parse(map['data_fim']) : null,
       objetivoDiario: map['objetivo_diario'],
+      horarioDoHabito: (map['horario_do_habito'] != null)
+          ? TimeOfdayHabitos.fromMap(map['horario_do_habito'])
+          : null,
+      habitoNotification: (map['habito_notification'] != null)
+          ? HabitoNotification.fromMap(map['habito_notification'])
+          : HabitoNotification(),
     );
   }
 

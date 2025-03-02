@@ -1,10 +1,9 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habitue_se/models/habito.dart';
+import 'package:habitue_se/pages/adicionar_novo_habito/agendar_horarios.dart';
 import 'package:habitue_se/pages/adicionar_novo_habito/novo_habito_view_controller.dart';
 import 'package:habitue_se/shared/status_enum.dart';
 import 'package:habitue_se/shared/temas.dart';
@@ -63,6 +62,8 @@ class _AdicionarNovoHabidoState extends State<AdicionarNovoHabido> {
                     const Gap(10),
                     _buildTitle(),
                     const Gap(10),
+                    _buildHorarioDoHabito(),
+                    const Gap(10),
                     _buildQuantidade(),
                     const Gap(10),
                     _buildDateInicio(title: 'Data de Inicio'),
@@ -81,7 +82,9 @@ class _AdicionarNovoHabidoState extends State<AdicionarNovoHabido> {
                             if (controller.statusNovoHabitoAdicionado ==
                                     StatusEnum.SUCESS &&
                                 mounted) {
-                              context.go('/home');
+                              if (mounted) {
+                                context.go('/home');
+                              }
                             }
                           },
                           style: ElevatedButton.styleFrom(
@@ -110,6 +113,50 @@ class _AdicionarNovoHabidoState extends State<AdicionarNovoHabido> {
         ),
       ),
     );
+  }
+
+  Widget _buildHorarioDoHabito() {
+    return SizedBox(
+      height: 40,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.access_time,
+                color: Temas.primary,
+              ),
+              const Gap(5),
+              Text(
+                'Horário das Notificações',
+                style: TextStyle(
+                  fontSize: fontTitleSize,
+                  fontWeight: FontWeight.w500,
+                ),
+              )
+            ],
+          ),
+          _buildHorarioSelector()
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHorarioSelector() {
+    return TextButton(
+        onPressed: () {
+          showModalBottomSheet(
+              context: context,
+              backgroundColor: Temas.backgroundColor,
+              builder: (context) {
+                return AgendarHorarios(controller: controller);
+              });
+        },
+        child: const Text(
+          'Selecionar',
+          style: TextStyle(color: Temas.bluePrimary),
+        ));
   }
 
   Widget _buildQuantidade() {

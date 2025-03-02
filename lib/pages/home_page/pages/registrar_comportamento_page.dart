@@ -1,8 +1,7 @@
 import 'dart:async';
 
-import 'package:date_format/date_format.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:get_it/get_it.dart';
 import 'package:habitue_se/models/habito.dart';
 import 'package:habitue_se/models/registrados_do_dia.dart';
@@ -28,7 +27,6 @@ class _RegistrarComportamentoPageState
 
   @override
   void initState() {
-    widget.habito.objetivoDiario = 100;
     registradosDoDia = controller.getRegistradosByHabitoId(widget.habito.id,
         day: controller.dataSelecionada);
     value = registradosDoDia.completadosHoje;
@@ -63,6 +61,29 @@ class _RegistrarComportamentoPageState
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
+          Text(
+            widget.habito.nome,
+            style: const TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.w600,
+                fontFeatures: [FontFeature.tabularFigures()]),
+          ),
+          if (widget.habito.descricao != null &&
+              widget.habito.descricao!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  const Gap(2),
+                  Text(widget.habito.descricao!,
+                      style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400,
+                          fontFeatures: [FontFeature.tabularFigures()])),
+                ],
+              ),
+            ),
+          const Gap(2),
           Text(
             '${value.ceil()} / ${widget.habito.objetivoDiario.toPrecision}',
             style: const TextStyle(
@@ -101,8 +122,6 @@ class _RegistrarComportamentoPageState
                       value: value,
                       max: widget.habito.objetivoDiario,
                       min: 0,
-                      label: '$value',
-                      divisions: widget.habito.objetivoDiario.toInt(),
                       activeColor: Temas.primary,
                       inactiveColor: Temas.boxColor,
                       allowedInteraction: SliderInteraction.tapAndSlide,
@@ -135,7 +154,19 @@ class _RegistrarComportamentoPageState
               ),
             ],
           ),
-          ElevatedButton(onPressed: () {}, child: const Text('Registrar'))
+          ElevatedButton(
+            onPressed: () {
+              controller.ajustarRegistroHabitoDiario(widget.habito,
+                  quantidade: value);
+              if (mounted) Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+                fixedSize: const Size.fromWidth(200),
+                padding: const EdgeInsets.all(10),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10))),
+            child: const Text('Registrar'),
+          )
         ],
       ),
     );

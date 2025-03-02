@@ -1,4 +1,4 @@
-final Map<int, String> diasSemana = {
+const Map<int, String> diasSemana = {
   DateTime.monday: 'Segunda-feira',
   DateTime.tuesday: 'Terça-feira',
   DateTime.wednesday: 'Quarta-feira',
@@ -8,7 +8,7 @@ final Map<int, String> diasSemana = {
   DateTime.sunday: 'Domingo',
 };
 
-final Map<int, String> mesesDoAno = {
+const Map<int, String> mesesDoAno = {
   DateTime.january: 'Janeiro',
   DateTime.february: 'Fevereiro',
   DateTime.march: 'Março',
@@ -25,4 +25,8 @@ final Map<int, String> mesesDoAno = {
 
 String diaDaSemana(int dia) {
   return diasSemana[dia]!;
+}
+
+String mesDoAno(int mes) {
+  return mesesDoAno[mes]!;
 }

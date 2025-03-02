@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get_it/get_it.dart';
 import 'package:habitue_se/models/habito.dart';
+import 'package:habitue_se/models/habito_notification.dart';
 import 'package:habitue_se/pages/home_page/controller/home_controller.dart';
 import 'package:habitue_se/shared/color_extension.dart';
 import 'package:habitue_se/shared/data_utils.dart';
+import 'package:habitue_se/shared/dia_da_semana.dart';
 import 'package:habitue_se/shared/status_enum.dart';
 import 'package:habitue_se/shared/temas.dart';
 import 'package:uuid/uuid.dart';
@@ -15,7 +17,7 @@ class NovoHabitoViewController extends ChangeNotifier {
   TextEditingController descricao = TextEditingController();
   TextEditingController habitoText = TextEditingController();
   TextEditingController icone = TextEditingController(text: '📝');
-
+  TextEditingController horarioDoHabito = TextEditingController();
   Color cor = Temas.primary;
   DateTime dataInicio = DateTime.now();
   DateTime? dataFim;
@@ -25,6 +27,14 @@ class NovoHabitoViewController extends ChangeNotifier {
   Habito? habitoParaEditar;
 
   HomeController homeController = GetIt.instance<HomeController>();
+
+  final List<int> days = diasSemana.keys.toList();
+  List<int> selectedDays = [1, 2, 3, 4, 5, 6, 7];
+  List<TimeOfdayHabitos> selectedTime = [
+    TimeOfdayHabitos(hour: 8, minute: 0),
+    TimeOfdayHabitos(hour: 12, minute: 0),
+    TimeOfdayHabitos(hour: 18, minute: 0),
+  ];
 
   NovoHabitoViewController({this.habitoParaEditar}) {
     if (habitoParaEditar != null) {
@@ -39,8 +49,16 @@ class NovoHabitoViewController extends ChangeNotifier {
       dataInicio = habitoParaEditar!.dataInicio;
       dataFim = habitoParaEditar!.dataFim;
       dataFimHabilitada = habitoParaEditar!.dataFim != null;
+      selectedTime = habitoParaEditar!.habitoNotification.horariosVariados;
+      selectedDays = habitoParaEditar!.habitoNotification.daysOfWeek;
       notifyListeners();
     }
+  }
+
+  void setHorarios(List<TimeOfdayHabitos> time, List<int> days) {
+    selectedTime = time;
+    selectedDays = days;
+    notifyListeners();
   }
 
   Future<void> createNewHabit() async {
@@ -64,6 +82,10 @@ class NovoHabitoViewController extends ChangeNotifier {
       hexColor: cor.toHexString(),
       dataInicio: dataInicio,
       dataFim: dataFimHabilitada ? dataFim : null,
+      habitoNotification: HabitoNotification(
+        daysOfWeek: selectedDays,
+        horariosVariados: selectedTime,
+      ),
     );
 
     homeController.addNewHabito(habito);

@@ -15,23 +15,23 @@ class SharedPrefs {
     return _prefs!;
   }
 
-  static Future<bool> containsKey(KeysSharedPreferences key) async {
+  static Future<bool> containsKey(String key) async {
     var shared = await _instance;
-    return shared.containsKey(key.value);
+    return shared.containsKey(key);
   }
 
-  static String getString(KeysSharedPreferences key) {
-    return _prefs?.getString(key.value) ?? '';
+  static String getString(String key) {
+    return _prefs?.getString(key) ?? '';
   }
 
-  static Future<bool> setString(KeysSharedPreferences key, String value) async {
+  static Future<bool> setString(String key, String value) async {
     var shared = await _instance;
-    return shared.setString(key.value, value);
+    return shared.setString(key, value);
   }
 }
 
 enum KeysSharedPreferences {
-  NOTIFICATION_TOKEN('notificationToken');
+  NOTIFICATION_IDS('notificationIds');
 
   const KeysSharedPreferences(this.value);
 

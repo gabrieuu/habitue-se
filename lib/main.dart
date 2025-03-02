@@ -1,16 +1,10 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:habitue_se/database/data_service.dart';
-import 'package:habitue_se/firebase_options.dart';
-import 'package:habitue_se/init_dependencies.dart';
-import 'package:habitue_se/models/custom_notification.dart';
 import 'package:habitue_se/models/habito.dart';
-import 'package:habitue_se/pages/home_page/controller/home_controller.dart';
+import 'package:habitue_se/pages/home_page/service/habito_service.dart';
 import 'package:habitue_se/preferences/shared_prefs.dart';
 import 'package:habitue_se/repository/concrete_habitos_repository.dart';
-import 'package:habitue_se/services/firebase_messaging_service.dart';
 import 'package:habitue_se/services/notification_service.dart';
 import 'package:habitue_se/setup_modules.dart';
 import 'package:habitue_se/setup_routes.dart';
@@ -45,11 +39,14 @@ void main() async {
   await Workmanager().initialize(
     callbackDispatcher,
   );
-  await Workmanager().registerPeriodicTask('habitos', 'notification_habitos',
-      frequency: const Duration(hours: 4),
-      existingWorkPolicy: ExistingWorkPolicy.replace,
-      constraints: Constraints(networkType: NetworkType.not_required),
-      initialDelay: const Duration(hours: 1));
+  await Workmanager().registerPeriodicTask(
+    'habitos',
+    'notification_habitos',
+    frequency: const Duration(days: 1),
+    existingWorkPolicy: ExistingWorkPolicy.replace,
+    initialDelay: const Duration(minutes: 15),
+    constraints: Constraints(networkType: NetworkType.not_required),
+  );
 
   runApp(const MyApp());
 }
@@ -60,18 +57,22 @@ void callbackDispatcher() {
     await Hive.initFlutter();
     await DataService.instance.init();
     if (task == 'notification_habitos') {
-      HomeController controller = HomeController(ConcreteHabitosRepository());
-      await controller.getAllHabitos();
-      List<Habito> habitos = controller.getHabitosByData(DateTime.now());
-      if (habitos.isEmpty) {
-        NotificationService().showNotification(CustomNotification(
-            id: 1,
-            title: 'Adicione um Habito!',
-            description:
-                'Que tal registrar seus habitos para se manter no foco?'));
-      } else {
-        await NotificationService().showNotificationForListHabits(habitos);
-      }
+      DateTime now = DateTime.now();
+      DateTime tomorrow = now.add(const Duration(days: 1));
+
+      HabitoService habitoService =
+          HabitoService(habitoRepository: ConcreteHabitosRepository());
+      NotificationService notificationService = NotificationService();
+
+      List<Habito> habitos = await habitoService.getHabitos();
+      List<Habito> habitosDeHoje = habitoService.getHabitosByData(now, habitos);
+      List<Habito> habitosDeAmanha =
+          habitoService.getHabitosByData(tomorrow, habitos);
+
+      await notificationService.scheduleNotificationsForDate(
+          habitosDeHoje, now);
+      await notificationService.scheduleNotificationsForDate(
+          habitosDeAmanha, tomorrow);
     }
     return Future.value(true);
   });

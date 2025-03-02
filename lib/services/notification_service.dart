@@ -114,7 +114,6 @@ class NotificationService {
   }
 
   Future<void> resetarNotificacoes() async {
-    await listarNotificacoesAtivas();
     await _localNotificationPlugin.cancelAll();
 
     List<Habito> habitos = await GetIt.instance<HabitoService>().getHabitos();
@@ -164,14 +163,18 @@ class NotificationService {
   }
 
   Future<void> scheduleNotificationHabit(Habito habito) async {
+    var idsNotificacoes = [];
     if (await SharedPrefs.containsKey(habito.id)) {
-      var idsNotificacoes =
-          jsonDecode(SharedPrefs.getString(habito.id)) as List;
+      idsNotificacoes = jsonDecode(SharedPrefs.getString(habito.id)) as List;
       for (var id in idsNotificacoes) {
         _localNotificationPlugin.cancel(id);
       }
+      idsNotificacoes = [];
+
+      await SharedPrefs.remove(habito.id);
     }
     for (var time in habito.habitoNotification.horariosVariados) {
+      idsNotificacoes.add(generateNotificationId(habito.id, time: time));
       await scheduleNotification(
         CustomNotification(
           id: generateNotificationId(habito.id, time: time),
@@ -181,12 +184,15 @@ class NotificationService {
         ),
       );
     }
+    await SharedPrefs.setString(habito.id, jsonEncode(idsNotificacoes));
+    await listarNotificacoesAtivas();
   }
 
   removeNotificationForHabit(Habito habito) async {
-    for (var time in habito.habitoNotification.horariosVariados) {
+    var idsNotificacoes = jsonDecode(SharedPrefs.getString(habito.id)) as List;
+    for (var time in idsNotificacoes) {
       await _localNotificationPlugin.cancel(
-        generateNotificationId(habito.id, time: time),
+        time as int,
       );
     }
   }

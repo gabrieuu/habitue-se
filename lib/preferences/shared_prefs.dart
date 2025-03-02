@@ -15,6 +15,11 @@ class SharedPrefs {
     return _prefs!;
   }
 
+  static Future<bool> remove(String key) async {
+    var shared = await _instance;
+    return shared.remove(key);
+  }
+
   static Future<bool> containsKey(String key) async {
     var shared = await _instance;
     return shared.containsKey(key);

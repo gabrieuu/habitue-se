@@ -1,12 +1,8 @@
-import 'dart:convert';
-
 import 'package:event_bus/event_bus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:habitue_se/models/habito.dart';
 import 'package:habitue_se/models/registrados_do_dia.dart';
-import 'package:habitue_se/preferences/shared_prefs.dart';
 import 'package:habitue_se/repository/abstract_habitos_repository.dart';
-import 'package:habitue_se/services/notification_service.dart';
 import 'package:habitue_se/shared/data_utils.dart';
 import 'package:habitue_se/shared/notification_events.dart';
 
@@ -17,40 +13,12 @@ class HabitoService {
 
   Future<List<Habito>> getHabitos() async {
     List<Habito> habitos = await habitoRepository.get();
-    for (var habito in habitos) {
-      if (!await SharedPrefs.containsKey(habito.id)) {
-        await _saveIdsNotificacoesInSharedPrefs(habito);
-      }
-      var data = SharedPrefs.getString(habito.id);
-    }
     return habitos;
   }
 
   Future<void> add(Habito habito) async {
     GetIt.instance<EventBus>().fire(NotificationEventHabitoCriado(habito));
-    _saveIdsNotificacoesInSharedPrefs(habito);
     await habitoRepository.add(habito);
-  }
-
-  Future<void> _saveIdsNotificacoesInSharedPrefs(Habito habito) async {
-    List<int> idsNotificacoes = [];
-    print('teste');
-    for (var time in habito.habitoNotification.horariosVariados) {
-      idsNotificacoes.add(GetIt.instance<NotificationService>()
-          .generateNotificationId(habito.id, time: time));
-    }
-    if (idsNotificacoes.isNotEmpty) {
-      if (await SharedPrefs.containsKey(habito.id)) {
-        var data = jsonDecode(SharedPrefs.getString(habito.id)) as List;
-
-        for (var id in data) {
-          if (!idsNotificacoes.contains(id)) {
-            idsNotificacoes.add(id);
-          }
-        }
-      }
-      await SharedPrefs.setString(habito.id, jsonEncode(idsNotificacoes));
-    }
   }
 
   deleteByDate(Habito habito, DateTime date) async {

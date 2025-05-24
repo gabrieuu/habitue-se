@@ -72,8 +72,8 @@ class _BottomAppBarWidgetState extends State<BottomAppBarWidget> {
                     ),
                     _item(
                       index: 1,
-                      icon: Icons.calendar_month_outlined,
-                      text: 'Calendario',
+                      icon: Icons.rocket_launch,
+                      text: 'Desafios',
                     ),
                     FloatingActionButton(
                         onPressed: () {

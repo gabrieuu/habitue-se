@@ -136,46 +136,46 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildListaDeTarefas(Tarefa tarefas) {
-    return ListenableBuilder(
-        listenable: controller,
-        builder: (context, _) {
-          return GestureDetector(
-            onTap: () {
-              controller.completarTarefa(tarefas);
-            },
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              decoration: BoxDecoration(
-                color: Temas.secondary,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: ListTile(
-                title: Text(
-                  tarefas.titulo,
-                  style: GoogleFonts.roboto(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Temas.blackColor),
-                ),
-                trailing: Checkbox(
-                  value: tarefas.completado,
-                  onChanged: (value) {
-                    controller.completarTarefa(tarefas);
-                  },
-                  activeColor: Colors.green,
-                ),
-              ),
-            ),
-          );
-        });
-  }
+  // Widget _buildListaDeTarefas(Tarefa tarefas) {
+  //   return ListenableBuilder(
+  //       listenable: controller,
+  //       builder: (context, _) {
+  //         return GestureDetector(
+  //           onTap: () {
+  //             controller.completarTarefa(tarefas);
+  //           },
+  //           child: Container(
+  //             margin: const EdgeInsets.only(bottom: 10),
+  //             decoration: BoxDecoration(
+  //               color: Temas.secondary,
+  //               borderRadius: BorderRadius.circular(10),
+  //             ),
+  //             child: ListTile(
+  //               title: Text(
+  //                 tarefas.titulo,
+  //                 style: GoogleFonts.roboto(
+  //                     fontSize: 15,
+  //                     fontWeight: FontWeight.bold,
+  //                     color: Temas.blackColor),
+  //               ),
+  //               trailing: Checkbox(
+  //                 value: tarefas.completado,
+  //                 onChanged: (value) {
+  //                   controller.completarTarefa(tarefas);
+  //                 },
+  //                 activeColor: Colors.green,
+  //               ),
+  //             ),
+  //           ),
+  //         );
+  //       });
+  // }
 
   Widget _buildTela() {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (controller.getHabitosByData(controller.dataSelecionada).isNotEmpty)
+        if (controller.habitos.isNotEmpty)
           ProgressoHojeWidget(),
         Align(
           alignment: Alignment.centerLeft,
@@ -199,10 +199,9 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        if (controller.getHabitosByData(controller.dataSelecionada).isEmpty)
-          const LottieEmptyList(),
-        if (controller.getHabitosByData(controller.dataSelecionada).isNotEmpty)
-          ListaDeHabitos(),
+        (controller.habitos.isEmpty) 
+          ? const LottieEmptyList()
+          : ListaDeHabitos(),
       ],
     );
   }

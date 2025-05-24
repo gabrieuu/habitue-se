@@ -12,16 +12,15 @@ class ListaDeHabitos extends StatelessWidget {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, child) {
-        var habitos = controller.getHabitosByData(controller.dataSelecionada);
 
         return SingleChildScrollView(
           scrollDirection: Axis.vertical,
           child: Column(
-              children: List.generate(habitos.length, (index) {
+              children: List.generate(controller.habitos.length, (index) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: HabitoTileWidget(
-                habito: habitos[index],
+                habito: controller.habitos[index],
               ),
             );
           })),

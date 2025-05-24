@@ -22,8 +22,7 @@ class HabitoTileWidget extends StatelessWidget {
         listenable: controller,
         builder: (context, _) {
           RegistradosDoDia registradoDoDia =
-              controller.getRegistradosByHabitoId(habito.id,
-                  day: controller.dataSelecionada);
+              controller.getRegistradosByHabitoId(habito.id);
 
           return _buildTela2(registradoDoDia, context);
         });
@@ -157,14 +156,14 @@ class HabitoTileWidget extends StatelessWidget {
 
   Widget _buildDate() {
     return Text(
-      '${habito.dataInicio.formatDateString} - ${habito.dataFim?.formatDateString ?? 'Indefinido'}',
+      '${habito.startDate.formatDateString} - ${habito.endDate?.formatDateString ?? 'Indefinido'}',
       style: const TextStyle(color: Temas.blackColor),
     );
   }
 
   Widget _buildTitle() {
     return Text(
-      habito.nome,
+      habito.name,
       style: const TextStyle(
           fontWeight: FontWeight.w600, fontSize: 20, color: Temas.blackColor),
       maxLines: 2,
@@ -196,19 +195,19 @@ class HabitoTileWidget extends StatelessWidget {
                     minHeight: 13,
                     color: hexToColor(habito.hexColor!),
                     value:
-                        registradoDoDia.completadosHoje / habito.objetivoDiario,
+                        registradoDoDia.completedToday / habito.dailyGoal,
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 const Gap(15),
                 Text(
-                    '${(registradoDoDia.completadosHoje / habito.objetivoDiario) * 100}%'),
+                    '${(registradoDoDia.completedToday / habito.dailyGoal) * 100}%'),
               ],
             ),
             RichText(
                 text: TextSpan(
                     text:
-                        '${registradoDoDia.completadosHoje.toPrecision} de ${habito.objetivoDiario.toPrecision}',
+                        '${registradoDoDia.completedToday.toPrecision} de ${habito.dailyGoal.toPrecision}',
                     style: const TextStyle(fontSize: 15, color: Temas.blackColor, fontWeight: FontWeight.w600),
                     children: const [
                   TextSpan(

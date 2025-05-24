@@ -14,7 +14,7 @@ class HabitosService {
     }
     var list = (listHabitos)
         .where((element) =>
-            _isDateWithinRange(date, element.dataInicio, element.dataFim))
+            _isDateWithinRange(date, element.startDate, element.endDate))
         .toList();
     return list;
   }

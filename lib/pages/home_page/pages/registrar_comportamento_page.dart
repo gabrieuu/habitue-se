@@ -27,9 +27,8 @@ class _RegistrarComportamentoPageState
 
   @override
   void initState() {
-    registradosDoDia = controller.getRegistradosByHabitoId(widget.habito.id,
-        day: controller.dataSelecionada);
-    value = registradosDoDia.completadosHoje;
+    registradosDoDia = controller.getRegistradosByHabitoId(widget.habito.id!);
+    value = registradosDoDia.completedToday;
     super.initState();
   }
 
@@ -45,8 +44,8 @@ class _RegistrarComportamentoPageState
 
   void changeValue(int value) {
     this.value += value;
-    if (this.value >= widget.habito.objetivoDiario) {
-      this.value = widget.habito.objetivoDiario;
+    if (this.value >= widget.habito.dailyGoal) {
+      this.value = widget.habito.dailyGoal;
     } else if (this.value < 0) {
       this.value = 0;
     }
@@ -62,20 +61,20 @@ class _RegistrarComportamentoPageState
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Text(
-            widget.habito.nome,
+            widget.habito.name,
             style: const TextStyle(
                 fontSize: 25,
                 fontWeight: FontWeight.w600,
                 fontFeatures: [FontFeature.tabularFigures()]),
           ),
-          if (widget.habito.descricao != null &&
-              widget.habito.descricao!.isNotEmpty)
+          if (widget.habito.description != null &&
+              widget.habito.description!.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
                   const Gap(2),
-                  Text(widget.habito.descricao!,
+                  Text(widget.habito.description!,
                       style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w400,
@@ -85,7 +84,7 @@ class _RegistrarComportamentoPageState
             ),
           const Gap(2),
           Text(
-            '${value.ceil()} / ${widget.habito.objetivoDiario.toPrecision}',
+            '${value.ceil()} / ${widget.habito.dailyGoal.toPrecision}',
             style: const TextStyle(
                 fontSize: 40,
                 fontWeight: FontWeight.w600,
@@ -120,7 +119,7 @@ class _RegistrarComportamentoPageState
                   ),
                   child: Slider.adaptive(
                       value: value,
-                      max: widget.habito.objetivoDiario,
+                      max: widget.habito.dailyGoal,
                       min: 0,
                       activeColor: Temas.primary,
                       inactiveColor: Temas.boxColor,

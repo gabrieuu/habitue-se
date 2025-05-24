@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:habitue_se/models/habito.dart';
 import 'package:habitue_se/models/registrados_do_dia.dart';
+import 'package:habitue_se/models/response/habitos_registrados_percents.dart';
 import 'package:habitue_se/models/tarefa.dart';
 import 'package:habitue_se/pages/home_page/service/habito_service.dart';
 import 'package:habitue_se/shared/data_utils.dart';
@@ -24,7 +25,6 @@ class HomeController extends ChangeNotifier {
   Future<void> init() async {
     await getAllHabitos();
     await getAllRegistradosDoDia();
-    // await getAllTarefas();
   }
 
   addNewHabito(Habito newHabito) async {
@@ -60,38 +60,37 @@ class HomeController extends ChangeNotifier {
 
   Future<void> ajustarRegistroHabitoDiario(Habito habito,
       {required double quantidade}) async {
-    var data = getRegistradosByHabitoId(
-      habito.id,
-    );
+    // // var data = getRegistradosByHabitoId(
+    // //   habito.id,
+    // // );
 
-    var comopletados = data.completadosHoje + quantidade;
-    if (comopletados > habito.objetivoDiario) {
-      return;
-    } else if (comopletados < 0) {
-      return;
-    }
+    // var comopletados = data.completadosHoje + quantidade;
+    // if (comopletados > habito.objetivoDiario) {
+    //   return;
+    // } else if (comopletados < 0) {
+    //   return;
+    // }
 
-    registradosDoDia.remove(data);
-    data.completadosHoje += quantidade;
-    registradosDoDia.add(data);
-    notifyListeners();
+    // registradosDoDia.remove(data);
+    // data.completadosHoje += quantidade;
+    // registradosDoDia.add(data);
+    // notifyListeners();
 
-    try {
-      await habitoService.addRegistradosDoDia(data);
-    } catch (e) {
-      registradosDoDia.remove(data);
-      data.completadosHoje -= quantidade;
-      registradosDoDia.add(data);
-      notifyListeners();
-    }
+    // try {
+    //   await habitoService.addRegistradosDoDia(data);
+    // } catch (e) {
+    //   registradosDoDia.remove(data);
+    //   data.completadosHoje -= quantidade;
+    //   registradosDoDia.add(data);
+    //   notifyListeners();
+    // }
   }
 
-  Future<void> getAllHabitos() async {
+  Future<void> getAllHabitos({DateTime? date}) async {
     try {
       statusHabitosLoading = StatusEnum.LOADING;
       notifyListeners();
-      habitos = await habitoService.getHabitos();
-      habitos.sort((a, b) => a.id.compareTo(b.id));
+      habitos = await habitoService.getHabitos(date ?? dataSelecionada);
       statusHabitosLoading = StatusEnum.SUCESS;
       notifyListeners();
     } catch (e) {
@@ -100,9 +99,6 @@ class HomeController extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-  List<Habito> getHabitosByData(DateTime date) =>
-      habitoService.getHabitosByData(date, habitos);
 
   // Future<void> getAllTarefas() async {
   //   try {
@@ -118,59 +114,26 @@ class HomeController extends ChangeNotifier {
   //   }
   // }
 
+  RegistradosDoDia getRegistradosByHabitoId(int habitoId){
+    RegistradosDoDia a = registradosDoDia.firstWhere((e) => e.habitId == habitoId, orElse: () {
+      return RegistradosDoDia(id: 0, habitId: habitoId, actualDay: dataSelecionada, completedToday: 0);
+    },);
+
+    return a;
+  }
+
   Future<void> getAllRegistradosDoDia({DateTime? date}) async {
     try {
       List<RegistradosDoDia> registradosDoDia =
-          await habitoService.getRegistradosDoDia();
+          await habitoService.getRegistradosDoDia(1, dataSelecionada);
       this.registradosDoDia = registradosDoDia.toSet();
     } finally {
       notifyListeners();
     }
   }
 
-  void completarTarefa(Tarefa tarefa) {
-    try {
-      tarefa.completado = !tarefa.completado;
-      //tarefasRepository.completaTarefa(tarefa);
-      notifyListeners();
-    } finally {
-      notifyListeners();
-    }
+  Future<List<HabitosRegistradosPercents>> getRegistradosByMonth() async{
+    return habitoService.getPercentsByMonth(DateTime(DateTime.now().year, DateTime.now().month, 1), DateTime(DateTime.now().year, DateTime.now().month + 1, 0));
   }
 
-  List<RegistradosDoDia> getRegistradosDoDiaSelecionado(DateTime day) {
-    if (habitos.isEmpty) {
-      return [];
-    }
-
-    return habitoService.getRegistradosDoDiaSelecionado(
-        day, registradosDoDia.toList());
-  }
-
-  RegistradosDoDia getRegistradosByHabitoId(String idHabito, {DateTime? day}) {
-    var data = getRegistradosDoDiaSelecionado(day ?? DateTime.now())
-        .firstWhere((e) => e.idHabito == idHabito, orElse: () {
-      return RegistradosDoDia(
-          idHabito: idHabito, diaAtual: day ?? DateTime.now().toFullYear());
-    });
-    return data;
-  }
-
-  double getPercentCompletado(DateTime day) {
-    double totalCompletado = getTotalCompletado(day);
-    double totalObjetivo = getTotalObjetivo(day);
-    double percent = totalCompletado / totalObjetivo;
-
-    if (totalObjetivo == 0) {
-      return 0.0;
-    }
-
-    return percent;
-  }
-
-  double getTotalCompletado(DateTime day) =>
-      habitoService.getTotalCompletado(day, registradosDoDia.toList());
-
-  double getTotalObjetivo(DateTime date) =>
-      habitoService.getTotalObjetivo(date, habitos);
 }

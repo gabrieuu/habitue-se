@@ -2,6 +2,7 @@ import 'package:event_bus/event_bus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:habitue_se/models/habito.dart';
 import 'package:habitue_se/models/registrados_do_dia.dart';
+import 'package:habitue_se/models/response/habitos_registrados_percents.dart';
 import 'package:habitue_se/repository/abstract_habitos_repository.dart';
 import 'package:habitue_se/shared/data_utils.dart';
 import 'package:habitue_se/shared/notification_events.dart';
@@ -11,8 +12,8 @@ class HabitoService {
 
   final AbstractHabitosRepository habitoRepository;
 
-  Future<List<Habito>> getHabitos() async {
-    List<Habito> habitos = await habitoRepository.get();
+  Future<List<Habito>> getHabitos(DateTime date) async {
+    List<Habito> habitos = await habitoRepository.get(data: date);
     return habitos;
   }
 
@@ -23,7 +24,7 @@ class HabitoService {
 
   deleteByDate(Habito habito, DateTime date) async {
     GetIt.instance<EventBus>().fire(NotificationEventHabitoApagado(habito));
-    await habitoRepository.deleteByDate(habito.id, date);
+    await habitoRepository.deleteByDate(habito.id!, date);
   }
 
   delete(Habito habito) async {
@@ -35,19 +36,15 @@ class HabitoService {
     await habitoRepository.addRegistradosDoDia(registradosDoDia);
   }
 
-  Future<List<RegistradosDoDia>> getRegistradosDoDia() async {
-    return await habitoRepository.getRegistradosDoDia();
+  Future<List<RegistradosDoDia>> getRegistradosDoDia(int userId, DateTime dataAtual) async {
+    String date = dataAtual.toIso8601String().split('T')[0];
+    return await habitoRepository.getRegistradosDoDia(userId, date);
   }
 
-  List<Habito> getHabitosByData(DateTime date, List<Habito> habitos) {
-    if (habitos.isEmpty) {
-      return [];
-    }
-    var list = habitos
-        .where((element) =>
-            isDateWithinRange(date, element.dataInicio, element.dataFim))
-        .toList();
-    return list;
+  Future<List<HabitosRegistradosPercents>> getPercentsByMonth(DateTime startDate, DateTime endDate) async{
+    String startDateString = startDate.toIso8601String().split('T')[0];
+    String endDateString = endDate.toIso8601String().split('T')[0];
+    return await habitoRepository.getPercentsByMonth(startDateString, endDateString);
   }
 
   bool isDateWithinRange(DateTime date, DateTime startDate, DateTime? endDate) {
@@ -60,40 +57,4 @@ class HabitoService {
         (date.isBefore(endDate) || date.isAtSameMomentAs(endDate));
   }
 
-  double getTotalObjetivo(DateTime date, List<Habito> habitos) {
-    double totalObjetivo = 0;
-    for (var item in habitos) {
-      if (date.toFullYear().isAfter(item.dataInicio.toFullYear()) ||
-          date.toFullYear().isSameDate(item.dataInicio.toFullYear())) {
-        if (item.dataFim != null &&
-            (date.toFullYear().isAfter(item.dataFim!.toFullYear()) ||
-                date.toFullYear().isSameDate(item.dataFim!.toFullYear()))) {
-          continue;
-        }
-        totalObjetivo += item.objetivoDiario;
-      }
-    }
-    return totalObjetivo;
-  }
-
-  List<RegistradosDoDia> getRegistradosDoDiaSelecionado(
-      DateTime day, List<RegistradosDoDia> registradosDoDia) {
-    return registradosDoDia
-        .where((element) => element.diaAtual.isSameDate(day))
-        .toList();
-  }
-
-  double getTotalCompletado(
-      DateTime day, List<RegistradosDoDia> registradosDoDiaGeral) {
-    double totalCompletado = 0;
-    List<RegistradosDoDia> registradosDoDia =
-        getRegistradosDoDiaSelecionado(day, registradosDoDiaGeral);
-    if (registradosDoDia.isEmpty) {
-      return 0;
-    }
-    for (var item in registradosDoDia) {
-      totalCompletado += item.completadosHoje;
-    }
-    return totalCompletado;
-  }
 }

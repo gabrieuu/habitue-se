@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habitue_se/models/habito.dart';
 import 'package:habitue_se/pages/adicionar_novo_habito/adicionar_novo_habido.dart';
-import 'package:habitue_se/pages/calendario/calendario_page.dart';
+import 'package:habitue_se/pages/desafios/desafios_page.dart';
 import 'package:habitue_se/pages/habitos/habitos_page.dart';
 import 'package:habitue_se/pages/home_page/pages/home_page.dart';
 import 'package:habitue_se/pages/bottom_app_bar/bottom_app_bar_widget.dart';
@@ -33,9 +33,9 @@ class Routes {
                 builder: (context, state) => HomePage(),
               ),
               GoRoute(
-                path: '/calendario',
+                path: '/desafios',
                 builder: (BuildContext context, GoRouterState state) {
-                  return CalendarioPage();
+                  return DesafiosPage();
                 },
               ),
               GoRoute(

@@ -1,26 +1,32 @@
 class RegistradosDoDia {
-  String idHabito;
-  DateTime diaAtual;
-  double completadosHoje;
+  int id;
+  int habitId;
+  double completedToday;
+  DateTime actualDay;
+  int registerBy;
+
 
   RegistradosDoDia(
-      {required this.idHabito,
-      required this.diaAtual,
-      this.completadosHoje = 0});
+      {required this.id,
+      required this.habitId,
+      required this.actualDay,
+       this.registerBy = 1,
+      this.completedToday = 0});
 
   Map<String, dynamic> toMap() {
     return {
-      'id_habito': idHabito,
-      'dia_atual': diaAtual.toIso8601String(),
-      'completados_hoje': completadosHoje,
+      'habitId': habitId,
+      'completedToday': completedToday,
     };
   }
 
   static RegistradosDoDia fromMap(Map<dynamic, dynamic> map) {
     return RegistradosDoDia(
-      idHabito: map['id_habito'],
-      diaAtual: DateTime.parse(map['dia_atual']),
-      completadosHoje: map['completados_hoje'].toDouble(),
+     id: map['id'],
+     habitId: map['habitId'],
+     completedToday: map['completedToday'],
+     actualDay: DateTime.parse(map['actualDay']),
+     registerBy: map['registeredBy']
     );
   }
 }

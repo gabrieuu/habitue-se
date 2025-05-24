@@ -38,11 +38,11 @@ class NotificationService {
     GetIt.instance<EventBus>().on<NotificationEvents>().listen((event) {
       switch (event) {
         case NotificationEventHabitoCriado():
-          log('NotificationEventHabitoCriado: ${event.habito.nome}');
+          log('NotificationEventHabitoCriado: ${event.habito.name}');
           scheduleNotificationHabit(event.habito);
           break;
         case NotificationEventHabitoApagado():
-          log('NotificationEventHabitoApagado: ${event.habito.nome}');
+          log('NotificationEventHabitoApagado: ${event.habito.name}');
           removeNotificationForHabit(event.habito);
           break;
         default:
@@ -116,10 +116,8 @@ class NotificationService {
   Future<void> resetarNotificacoes() async {
     await _localNotificationPlugin.cancelAll();
 
-    List<Habito> habitos = await GetIt.instance<HabitoService>().getHabitos();
-
-    List<Habito> habitosDoDia = GetIt.instance<HabitoService>()
-        .getHabitosByData(DateTime.now(), habitos);
+    List<Habito> habitosDoDia = await GetIt.instance<HabitoService>()
+        .getHabitos(DateTime.now());
 
     await scheduleNotificationsForDate(habitosDoDia, DateTime.now());
   }
@@ -154,9 +152,9 @@ class NotificationService {
       await showNotification(
         CustomNotification(
           id: generateNotificationId(habito.id),
-          title: 'Lembre-se de ${habito.nome} hoje!',
+          title: 'Lembre-se de ${habito.name} hoje!',
           description:
-              '${habito.nome} é um hábito que você precisa manter, não esqueça de completá-lo hoje!',
+              '${habito.name} é um hábito que você precisa manter, não esqueça de completá-lo hoje!',
         ),
       );
     });
@@ -164,32 +162,32 @@ class NotificationService {
 
   Future<void> scheduleNotificationHabit(Habito habito) async {
     var idsNotificacoes = [];
-    if (await SharedPrefs.containsKey(habito.id)) {
-      idsNotificacoes = jsonDecode(SharedPrefs.getString(habito.id)) as List;
+    if (await SharedPrefs.containsKey(habito.id.toString())) {
+      idsNotificacoes = jsonDecode(SharedPrefs.getString(habito.id.toString())) as List;
       for (var id in idsNotificacoes) {
         _localNotificationPlugin.cancel(id);
       }
       idsNotificacoes = [];
 
-      await SharedPrefs.remove(habito.id);
+      await SharedPrefs.remove(habito.id.toString());
     }
     for (var time in habito.habitoNotification.horariosVariados) {
       idsNotificacoes.add(generateNotificationId(habito.id, time: time));
       await scheduleNotification(
         CustomNotification(
           id: generateNotificationId(habito.id, time: time),
-          title: 'lembrete de ${habito.nome}',
+          title: 'lembrete de ${habito.name}',
           description: 'Hora de realizar seu hábito!',
           scheduleTime: time,
         ),
       );
     }
-    await SharedPrefs.setString(habito.id, jsonEncode(idsNotificacoes));
+    await SharedPrefs.setString(habito.id.toString(), jsonEncode(idsNotificacoes));
     await listarNotificacoesAtivas();
   }
 
   removeNotificationForHabit(Habito habito) async {
-    var idsNotificacoes = jsonDecode(SharedPrefs.getString(habito.id)) as List;
+    var idsNotificacoes = jsonDecode(SharedPrefs.getString(habito.id.toString())) as List;
     for (var time in idsNotificacoes) {
       await _localNotificationPlugin.cancel(
         time as int,
@@ -258,8 +256,8 @@ class NotificationService {
     }
   }
 
-  int generateNotificationId(String uuid, {TimeOfdayHabitos? time}) {
-    int uuidHash = utf8.encode(uuid).reduce((a, b) => a + b);
+  int generateNotificationId(int id, {TimeOfdayHabitos? time}) {
+    int uuidHash = utf8.encode(id.toString()).reduce((a, b) => a + b);
     return uuidHash + ((time?.hour ?? 0) * 60) + (time?.minute ?? 0);
   }
 }

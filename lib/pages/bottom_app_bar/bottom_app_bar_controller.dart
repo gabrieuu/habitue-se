@@ -12,7 +12,7 @@ class BottomAppBarController extends ChangeNotifier {
         context.go('/home');
         break;
       case 1:
-        context.push('/calendario');
+        context.push('/desafios');
         break;
       case 2:
         context.push('/tarefas');

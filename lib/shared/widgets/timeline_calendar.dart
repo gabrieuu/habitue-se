@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:habitue_se/pages/home_page/controller/calendar_state.dart';
 import 'package:habitue_se/pages/home_page/controller/home_controller.dart';
 import 'package:habitue_se/pages/home_page/percent_color.dart';
 import 'package:habitue_se/shared/data_utils.dart';
@@ -17,12 +18,24 @@ class TimelineCalendar extends StatefulWidget {
 }
 
 class _TimelineCalendarState extends State<TimelineCalendar> {
-  final HomeController controller = GetIt.instance<HomeController>();
+
+  CalendarState calendarState = CalendarState([]);
+  HomeController controller = GetIt.instance();
+
+  @override
+  void initState() {
+    super.initState();
+    init();
+  }
+
+  void init() async{
+    calendarState.value = await controller.getRegistradosByMonth();
+  }
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-        listenable: controller,
+        listenable: calendarState,
         builder: (context, _) {
           return EasyDateTimeLinePicker.itemBuilder(
             firstDate: DateTime(DateTime.now().year, DateTime.now().month, 1),
@@ -50,6 +63,7 @@ class _TimelineCalendarState extends State<TimelineCalendar> {
               onTap();
               setState(() {});
               controller.getAllRegistradosDoDia();
+              controller.getAllHabitos();
             }
           : null,
       child: Stack(
@@ -96,9 +110,9 @@ class _TimelineCalendarState extends State<TimelineCalendar> {
             CustomPaint(
               size: const Size(50, 70),
               painter: _MyBorderPainter(
-                  progress: controller.getPercentCompletado(date),
+                  progress: calendarState.habitoCompleteByData(date).percentComplete,
                   borderColor:
-                      percentColor(controller.getPercentCompletado(date))),
+                      percentColor(calendarState.habitoCompleteByData(date).percentComplete)),
             ),
         ],
       ),

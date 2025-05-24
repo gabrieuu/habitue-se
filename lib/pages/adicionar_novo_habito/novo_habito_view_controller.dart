@@ -38,17 +38,15 @@ class NovoHabitoViewController extends ChangeNotifier {
 
   NovoHabitoViewController({this.habitoParaEditar}) {
     if (habitoParaEditar != null) {
-      objetivo.text = habitoParaEditar!.objetivoDiario.toString();
-      unidade.text = habitoParaEditar!.unidadeDeMedida;
-      descricao.text = habitoParaEditar!.descricao ?? '';
-      habitoText.text = habitoParaEditar!.nome;
+      objetivo.text = habitoParaEditar!.dailyGoal.toString();
+      unidade.text = habitoParaEditar!.unitOfMeasure;
+      descricao.text = habitoParaEditar!.description ?? '';
+      habitoText.text = habitoParaEditar!.name;
       icone.text = habitoParaEditar!.unicodeEmoji;
-      cor = habitoParaEditar!.hexColor != null
-          ? hexToColor(habitoParaEditar!.hexColor!)
-          : cor;
-      dataInicio = habitoParaEditar!.dataInicio;
-      dataFim = habitoParaEditar!.dataFim;
-      dataFimHabilitada = habitoParaEditar!.dataFim != null;
+      cor = hexToColor(habitoParaEditar!.hexColor);
+      dataInicio = habitoParaEditar!.startDate;
+      dataFim = habitoParaEditar!.endDate;
+      dataFimHabilitada = habitoParaEditar!.endDate != null;
       selectedTime = habitoParaEditar!.habitoNotification.horariosVariados;
       selectedDays = habitoParaEditar!.habitoNotification.daysOfWeek;
       notifyListeners();
@@ -73,15 +71,15 @@ class NovoHabitoViewController extends ChangeNotifier {
     notifyListeners();
 
     Habito habito = Habito(
-      id: habitoParaEditar != null ? habitoParaEditar!.id : const Uuid().v1(),
-      objetivoDiario: double.tryParse(objetivo.text)!,
-      unidadeDeMedida: unidade.text,
-      nome: habitoText.text,
-      descricao: descricao.text,
+      id: 0,
+      dailyGoal: double.tryParse(objetivo.text)!,
+      unitOfMeasure: unidade.text,
+      name: habitoText.text,
+      description: descricao.text,
       unicodeEmoji: icone.text,
       hexColor: cor.toHexString(),
-      dataInicio: dataInicio,
-      dataFim: dataFimHabilitada ? dataFim : null,
+      startDate: dataInicio,
+      endDate: dataFimHabilitada ? dataFim : null,
       habitoNotification: HabitoNotification(
         daysOfWeek: selectedDays,
         horariosVariados: selectedTime,

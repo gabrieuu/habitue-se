@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:habitue_se/pages/home_page/controller/calendar_state.dart';
 import 'package:habitue_se/pages/home_page/controller/home_controller.dart';
 import 'package:habitue_se/pages/home_page/percent_color.dart';
 import 'package:habitue_se/pages/home_page/widgets/habito_tile_widget.dart';
@@ -9,15 +10,16 @@ import 'package:habitue_se/shared/temas.dart';
 class ProgressoHojeWidget extends StatelessWidget {
   ProgressoHojeWidget({super.key});
 
-  HomeController controller = GetIt.instance<HomeController>();
+  CalendarState calendarState = CalendarState([]);
+  HomeController controller = GetIt.instance();
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-        listenable: controller,
+        listenable: calendarState,
         builder: (context, child) {
           var percent =
-              controller.getPercentCompletado(controller.dataSelecionada);
+              calendarState.habitoCompleteByData(controller.dataSelecionada).percentComplete;
           return Container(
             height: 60,
             width: MediaQuery.of(context).size.width * .95,

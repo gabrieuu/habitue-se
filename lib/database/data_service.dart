@@ -28,6 +28,8 @@ class DataService
     // await registroBox.clear();
   }
 
+  
+
   @override
   Future<void> addAllHabito(List<Habito> habitos) {
     // TODO: implement addAllHabito
@@ -36,47 +38,23 @@ class DataService
 
   @override
   Future<void> addhabito(Habito habito) async {
-    // String token =
-    //     SharedPrefs.getString(KeysSharedPreferences.NOTIFICATION_TOKEN);
-
-    // await FirebaseFirestore.instance
-    //     .collection('notifications')
-    //     .doc(token)
-    //     .set({
-    //   'deviceToken': token,
-    //   'startTime': habito.dataInicio.toIso8601String(),
-    //   'intervalHours': 4,
-    //   'enabled': true,
-    // });
-
-    await habitoBox.put(habito.id, habito.toMap());
+    await habitoBox.put(habito.id, habito.toJson());
   }
 
   @override
   Future<void> deleteHabitoByData(String id, DateTime date) async {
-    Habito habito = Habito.fromMap(habitoBox.get(id));
-    habito.dataFim = date.subtract(const Duration(days: 1));
-    await habitoBox.put(habito.id, habito.toMap());
+    Habito habito = Habito.fromJson(habitoBox.get(id));
+    habito.endDate = date.subtract(const Duration(days: 1));
+    await habitoBox.put(habito.id, habito.toJson());
     if (registroBox.containsKey(getRegistroDiaKey(habito.id, date))) {
       await registroBox.delete(getRegistroDiaKey(habito.id, date));
     }
   }
 
-  Future<void> deleteFullHabito(String id) async {
-    await habitoBox.delete(id);
-    List<RegistradosDoDia> registradoDoDia =
-        registroBox.values.map((e) => RegistradosDoDia.fromMap(e)).toList();
-    List<String> listaDeKeys = registradoDoDia
-        .where((e) => e.idHabito == id)
-        .map((e) => e.diaAtual.toIso8601String().split('T')[0])
-        .toList();
-    await registroBox.deleteAll(listaDeKeys);
-  }
-
   @override
   Future<List<Habito>> getAllHabitos() async {
     var response = habitoBox.values.toList();
-    return response.map((e) => Habito.fromMap(e)).toList();
+    return response.map((e) => Habito.fromJson(e)).toList();
   }
 
   @override
@@ -94,10 +72,10 @@ class DataService
   @override
   Future<void> saveRegistrosDiarios(RegistradosDoDia data) async {
     await registroBox.put(
-        getRegistroDiaKey(data.idHabito, data.diaAtual), data.toMap());
+        getRegistroDiaKey(data.habitId, DateTime.now()), data.toMap());
   }
 
-  String getRegistroDiaKey(String idHabito, DateTime date) {
+  String getRegistroDiaKey(int idHabito, DateTime date) {
     String key =
         '$idHabito${date.toFullYear().toIso8601String().split('T')[0]}';
     return key;

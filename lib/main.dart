@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:habitue_se/database/data_service.dart';
+import 'package:habitue_se/infra/dio_client.dart';
 import 'package:habitue_se/models/habito.dart';
 import 'package:habitue_se/pages/home_page/service/habito_service.dart';
 import 'package:habitue_se/preferences/shared_prefs.dart';
@@ -61,13 +62,13 @@ void callbackDispatcher() {
       DateTime tomorrow = now.add(const Duration(days: 1));
 
       HabitoService habitoService =
-          HabitoService(habitoRepository: ConcreteHabitosRepository());
+          HabitoService(habitoRepository: ConcreteHabitosRepository(DioClient()));
       NotificationService notificationService = NotificationService();
 
-      List<Habito> habitos = await habitoService.getHabitos();
-      List<Habito> habitosDeHoje = habitoService.getHabitosByData(now, habitos);
-      List<Habito> habitosDeAmanha =
-          habitoService.getHabitosByData(tomorrow, habitos);
+      List<Habito> habitosDeHoje = await
+          habitoService.getHabitos(DateTime.now());
+      List<Habito> habitosDeAmanha = await
+          habitoService.getHabitos(DateTime.now().add(Duration(days: 1)));
 
       await notificationService.scheduleNotificationsForDate(
           habitosDeHoje, now);
